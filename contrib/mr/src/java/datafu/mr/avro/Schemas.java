@@ -14,7 +14,7 @@
 * the License.
 */
 
-package datafu.mr.test.util;
+package datafu.mr.avro;
 
 import java.util.Arrays;
 

@@ -13,6 +13,8 @@
         <dependency org="org.apache.avro" name="avro" rev="1.7.4" conf="common->default"/>
         <dependency org="org.apache.avro" name="avro-mapred" rev="1.7.4" conf="common->default"/>
         <dependency org="org.apache.avro" name="avro-compiler" rev="1.7.4" conf="common->default"/>
+        <dependency org="commons-codec" name="commons-codec" rev="1.8" conf="common->default"/>
+        <dependency org="org.apache.commons" name="commons-math" rev="2.2" conf="common->default"/>
 
         <!-- hadoop: needed for compilation and testing, not listed as a dependencies in pom -->
         <dependency org="org.apache.hadoop" name="hadoop-core" rev="1.0.4" conf="hadoop->default"/>
