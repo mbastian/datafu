@@ -38,7 +38,7 @@ public class BasicAvroJobIntermediateWritable extends AbstractAvroJob {
 	static {
 		OUTPUT_SCHEMA = Schemas.createRecordSchema(
 				BasicAvroJobIntermediateWritable.class, "Output", new Field(
-						"id", Schema.create(Type.LONG), "ID", null), new Field(
+						"identifier", Schema.create(Type.LONG), "identifier", null), new Field(
 						"count", Schema.create(Type.LONG), "count", null));
 	}
 
@@ -103,9 +103,9 @@ public class BasicAvroJobIntermediateWritable extends AbstractAvroJob {
 			for (LongWritable value : values) {
 				count += (Long) value.get();
 			}
-			output.put("id", key.get());
+			output.put("identifier", key.get());
 			output.put("count", count);
-			System.out.println("Output key=" + output.get("id") + "  count="
+			System.out.println("Output key=" + output.get("identifier") + "  count="
 					+ output.get("count"));
 			context.write(new AvroKey<GenericRecord>(output), null);
 		}

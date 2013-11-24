@@ -39,12 +39,12 @@ public class BasicAvroJob extends AbstractAvroJob {
 
 	static {
 		KEY_SCHEMA = Schemas.createRecordSchema(BasicAvroJob.class, "Key",
-				new Field("id", Schema.create(Type.LONG), "ID", null));
+				new Field("identifier", Schema.create(Type.LONG), "identifier", null));
 		VALUE_SCHEMA = Schemas.createRecordSchema(BasicAvroJob.class, "Value",
 				new Field("count", Schema.create(Type.LONG), "count", null));
 		OUTPUT_SCHEMA = Schemas.createRecordSchema(BasicAvroJob.class,
 				"Output",
-				new Field("id", Schema.create(Type.LONG), "ID", null),
+				new Field("identifier", Schema.create(Type.LONG), "identifier", null),
 				new Field("count", Schema.create(Type.LONG), "count", null));
 	}
 
@@ -88,8 +88,8 @@ public class BasicAvroJob extends AbstractAvroJob {
 		@Override
 		protected void map(AvroKey<GenericRecord> input, NullWritable unused,
 				Context context) throws IOException, InterruptedException {
-			key.put("id", input.datum().get("id"));
-			System.out.println("Input key=" + key.get("id"));
+			key.put("identifier", input.datum().get("id"));
+			System.out.println("Input key=" + key.get("identifier"));
 			context.write(new AvroKey<GenericRecord>(key),
 					new AvroValue<GenericRecord>(value));
 		}
@@ -112,9 +112,9 @@ public class BasicAvroJob extends AbstractAvroJob {
 			for (AvroValue<GenericRecord> value : values) {
 				count += (Long) value.datum().get("count");
 			}
-			output.put("id", key.datum().get("id"));
+			output.put("identifier", key.datum().get("identifier"));
 			output.put("count", count);
-			System.out.println("Output key=" + output.get("id") + "  count="
+			System.out.println("Output key=" + output.get("identifier") + "  count="
 					+ output.get("count"));
 			context.write(new AvroKey<GenericRecord>(output), null);
 		}

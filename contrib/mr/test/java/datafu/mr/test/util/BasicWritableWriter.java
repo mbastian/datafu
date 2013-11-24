@@ -25,55 +25,62 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
 
 @SuppressWarnings("rawtypes")
-public class BasicWritableWriter<K extends Writable, V extends Writable> {
-	private final Path _outputPath;
-	private final FileSystem _fs;
-	private final Class<K> _keyClass;
-	private final Class<V> _valueClass;
+public class BasicWritableWriter<K extends Writable, V extends Writable>
+{
+  private final Path _outputPath;
+  private final FileSystem _fs;
+  private final Class<K> _keyClass;
+  private final Class<V> _valueClass;
 
-	private SequenceFile.Writer _dataWriter;
+  private SequenceFile.Writer _dataWriter;
 
-	public BasicWritableWriter(Path outputPath, FileSystem fs, Class<K> keyClass,
-			Class<V> valueClass) {
-		_outputPath = outputPath;
-		_fs = fs;
-		_keyClass = keyClass;
-		_valueClass = valueClass;
-	}
+  public BasicWritableWriter(Path outputPath, FileSystem fs, Class<K> keyClass, Class<V> valueClass)
+  {
+    _outputPath = outputPath;
+    _fs = fs;
+    _keyClass = keyClass;
+    _valueClass = valueClass;
+  }
 
-	public void open() throws IOException {
-		if (_dataWriter != null) {
-			throw new RuntimeException("Already have data writer");
-		}
+  public void open() throws IOException
+  {
+    if (_dataWriter != null)
+    {
+      throw new RuntimeException("Already have data writer");
+    }
 
-		Path path = _outputPath;
+    Path path = _outputPath;
 
-		_dataWriter = SequenceFile.createWriter(_fs, new Configuration(),
-				new Path(path, "part-00000"), _keyClass, _valueClass);
-	}
+    _dataWriter =
+        SequenceFile.createWriter(_fs, new Configuration(), new Path(path, "part-00000"), _keyClass, _valueClass);
+  }
 
-	public void append(K key, V value) throws IOException {
-		if (_dataWriter == null) {
-			throw new RuntimeException("No data writer");
-		}
-		if (!key.getClass().equals(_keyClass)) {
-			throw new RuntimeException("The key class doesn't match, actual="
-					+ key.getClass().getSimpleName() + ", expected="
-					+ _keyClass.getClass().getSimpleName());
-		}
-		if (!value.getClass().equals(_valueClass)) {
-			throw new RuntimeException("The value class doesn't match, actual="
-					+ value.getClass().getSimpleName() + ", expected="
-					+ _valueClass.getClass().getSimpleName());
-		}
-		_dataWriter.append(key, value);
-	}
+  public void append(K key, V value) throws IOException
+  {
+    if (_dataWriter == null)
+    {
+      throw new RuntimeException("No data writer");
+    }
+    if (!key.getClass().equals(_keyClass))
+    {
+      throw new RuntimeException("The key class doesn't match, actual=" + key.getClass().getSimpleName()
+          + ", expected=" + _keyClass.getClass().getSimpleName());
+    }
+    if (!value.getClass().equals(_valueClass))
+    {
+      throw new RuntimeException("The value class doesn't match, actual=" + value.getClass().getSimpleName()
+          + ", expected=" + _valueClass.getClass().getSimpleName());
+    }
+    _dataWriter.append(key, value);
+  }
 
-	public void close() throws IOException {
-		if (_dataWriter == null) {
-			throw new RuntimeException("No data writer");
-		}
-		_dataWriter.close();
-		_dataWriter = null;
-	}
+  public void close() throws IOException
+  {
+    if (_dataWriter == null)
+    {
+      throw new RuntimeException("No data writer");
+    }
+    _dataWriter.close();
+    _dataWriter = null;
+  }
 }

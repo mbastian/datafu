@@ -45,6 +45,7 @@ import datafu.mr.fs.PathUtils;
 import datafu.mr.jobs.AbstractAvroJob;
 import datafu.mr.test.jobs.BasicAvroJob;
 import datafu.mr.test.jobs.BasicAvroJobIntermediateWritable;
+import datafu.mr.test.util.BasicAvroReader;
 import datafu.mr.test.util.BasicAvroWriter;
 
 @Test(groups = "pcl")
@@ -182,34 +183,16 @@ public class TestAvroJob extends TestBase {
 
 	private HashMap<Long, Long> loadOutputCounts() throws IOException {
 		HashMap<Long, Long> counts = new HashMap<Long, Long>();
-		FileSystem fs = getFileSystem();
-		Assert.assertTrue(fs.exists(_outputPath));
-		
-		for(FileStatus s : fs.listStatus(_outputPath)) {
-			System.out.println("AVROREAD "+s.getPath().toString());
-		}
 
-		for (FileStatus stat : fs.globStatus(new Path(_outputPath.toString()
-				+ "/*.avro"))) {
-			_log.info(String.format("found: %s (%d bytes)", stat.getPath(),
-					stat.getLen()));
-			FSDataInputStream is = fs.open(stat.getPath());
-			DatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>();
-			DataFileStream<GenericRecord> dataFileStream = new DataFileStream<GenericRecord>(
-					is, reader);
-
-			try {
-				while (dataFileStream.hasNext()) {
-					GenericRecord r = dataFileStream.next();
-					Long memberId = (Long) r.get("id");
-					Long count = (Long) r.get("count");
-					Assert.assertFalse(counts.containsKey(memberId));
-					counts.put(memberId, count);
-				}
-			} finally {
-				dataFileStream.close();
-			}
+		BasicAvroReader reader = new BasicAvroReader(_outputPath, getFileSystem());
+		reader.open();
+		for(GenericRecord r : reader.readAll()) {
+			Long memberId = (Long) r.get("identifier");
+			Long count = (Long) r.get("count");
+			Assert.assertFalse(counts.containsKey(memberId));
+			counts.put(memberId, count);
 		}
+		reader.close();
 		return counts;
 	}
 	
