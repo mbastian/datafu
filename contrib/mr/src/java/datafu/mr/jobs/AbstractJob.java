@@ -101,7 +101,6 @@ public abstract class AbstractJob extends Configured {
 
 	private Properties _props;
 	private String _name;
-	private boolean _useCombiner;
 	private Path _countersParentPath;
 	private Integer _numReducers;
 	private Integer _retentionCount;
@@ -220,10 +219,6 @@ public abstract class AbstractJob extends Configured {
 					.parseInt((String) _props.get("num.reducers")));
 		}
 
-		if (_props.get("use.combiner") != null) {
-			setUseCombiner(Boolean.parseBoolean((String) _props
-					.get("use.combiner")));
-		}
 		if (_props.get("counters.path") != null) {
 			setCountersParentPath(new Path((String) _props.get("counters.path")));
 		}
@@ -289,26 +284,6 @@ public abstract class AbstractJob extends Configured {
 	 */
 	public void setNumReducers(Integer numReducers) {
 		this._numReducers = numReducers;
-	}
-
-	/**
-	 * Gets whether the combiner should be used.
-	 * 
-	 * @return True if combiner should be used, otherwise false.
-	 */
-	public boolean isUseCombiner() {
-		return _useCombiner;
-	}
-
-	/**
-	 * Sets whether the combiner should be used. Can also be set with
-	 * <em>use.combiner</em>.
-	 * 
-	 * @param useCombiner
-	 *            True if a combiner should be used, otherwise false.
-	 */
-	public void setUseCombiner(boolean useCombiner) {
-		this._useCombiner = useCombiner;
 	}
 
 	/**
@@ -613,7 +588,7 @@ public abstract class AbstractJob extends Configured {
 			job.setNumReduceTasks(0);
 		}
 
-		if (isUseCombiner() && getCombinerClass() != null) {
+		if (getCombinerClass() != null) {
 			job.setCombinerClass(getCombinerClass());
 		}
 
