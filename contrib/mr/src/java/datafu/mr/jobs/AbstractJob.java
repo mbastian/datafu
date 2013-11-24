@@ -224,11 +224,19 @@ public abstract class AbstractJob extends Configured {
 			setUseCombiner(Boolean.parseBoolean((String) _props
 					.get("use.combiner")));
 		}
-
 		if (_props.get("counters.path") != null) {
 			setCountersParentPath(new Path((String) _props.get("counters.path")));
 		}
-
+		if (_props.get("mapred.reduce.tasks") != null
+				|| _props.get(HADOOP_PREFIX + "mapred.reduce.tasks") != null) {
+			if (_props.get("mapred.reduce.tasks") != null) {
+				setNumReducers(Integer.parseInt(_props
+						.getProperty("mapred.reduce.tasks")));
+			} else {
+				setNumReducers(Integer.parseInt(_props
+						.getProperty(HADOOP_PREFIX + "mapred.reduce.tasks")));
+			}
+		}
 		if (_props.get("mapred.cache.files") != null) {
 			String[] pathSplit = ((String) _props.get("mapred.cache.files"))
 					.split(",");
@@ -674,6 +682,8 @@ public abstract class AbstractJob extends Configured {
 			if (key.toLowerCase().startsWith(HADOOP_PREFIX)) {
 				newKey = key.substring(HADOOP_PREFIX.length());
 				config.set(newKey, value);
+			} else {
+				config.set(key, value);
 			}
 		}
 	}
