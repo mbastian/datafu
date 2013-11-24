@@ -40,15 +40,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import datafu.mr.avro.Schemas;
 import datafu.mr.fs.PathUtils;
 import datafu.mr.jobs.AbstractAvroJob;
-import datafu.mr.jobs.AbstractJob;
-import datafu.mr.test.jobs.BasicAvroJob;
 import datafu.mr.test.jobs.BasicAvroJob;
 import datafu.mr.test.jobs.BasicAvroJobIntermediateWritable;
-import datafu.mr.test.jobs.BasicAvroJob;
 import datafu.mr.test.util.BasicAvroWriter;
-import datafu.mr.test.util.Schemas;
 
 @Test(groups = "pcl")
 public class TestAvroJob extends TestBase {

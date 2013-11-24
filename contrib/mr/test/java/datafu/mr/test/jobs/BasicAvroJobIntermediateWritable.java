@@ -17,7 +17,6 @@
 package datafu.mr.test.jobs;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -25,14 +24,13 @@ import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.AvroKey;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import datafu.mr.avro.Schemas;
 import datafu.mr.jobs.AbstractAvroJob;
-import datafu.mr.test.util.Schemas;
 
 public class BasicAvroJobIntermediateWritable extends AbstractAvroJob {
 	public static final Schema OUTPUT_SCHEMA;
