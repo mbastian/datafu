@@ -50,30 +50,30 @@ public abstract class AbstractAvroJob extends AbstractJob {
 
 	@Override
 	public void setupInputFormat(StagedOutputJob job) throws IOException {
-		if (job.getInputPaths().size() > 1) {
-			if (_combineInputs) {
-				job.setInputFormatClass(CombinedAvroMultipleInputsKeyInputFormat.class);
-			} else {
-				job.setInputFormatClass(AvroMultipleInputsKeyInputFormat.class);
-			}
-
-			for (Path p : getInputPaths()) {
-				Schema inputSchema = PathUtils.getSchemaFromPath(
-						getFileSystem(), p);
-				AvroMultipleInputsUtil.setInputKeySchemaForPath(job,
-						inputSchema, p.toString());
-			}
-		} else {
+//		if (job.getInputPaths().size() > 1) {
+//			if (_combineInputs) {
+//				job.setInputFormatClass(CombinedAvroMultipleInputsKeyInputFormat.class);
+//			} else {
+//				job.setInputFormatClass(AvroMultipleInputsKeyInputFormat.class);
+//			}
+//
+//			for (Path p : getInputPaths()) {
+//				Schema inputSchema = PathUtils.getSchemaFromPath(
+//						getFileSystem(), p);
+//				AvroMultipleInputsUtil.setInputKeySchemaForPath(job,
+//						inputSchema, p.toString());
+//			}
+//		} else {
 			if (_combineInputs) {
 				job.setInputFormatClass(CombinedAvroKeyInputFormat.class);
 			} else {
 				job.setInputFormatClass(AvroKeyInputFormat.class);
 			}
 
-			Schema inputSchema = PathUtils.getSchemaFromPath(getFileSystem(),
-					getInputPaths().get(0));
-			AvroJob.setInputKeySchema(job, inputSchema);
-		}
+//			Schema inputSchema = PathUtils.getSchemaFromPath(getFileSystem(),
+//					getInputPaths().get(0));
+//			AvroJob.setInputKeySchema(job, inputSchema);
+//		}
 	}
 
 	@Override
