@@ -14,5 +14,4 @@ lib/
 dist/
 .metadata
 .settings
-.project
 .DS_Store
