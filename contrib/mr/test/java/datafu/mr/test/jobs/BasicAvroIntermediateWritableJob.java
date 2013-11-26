@@ -32,13 +32,13 @@ import org.apache.hadoop.mapreduce.Reducer;
 import datafu.mr.avro.Schemas;
 import datafu.mr.jobs.AbstractAvroJob;
 
-public class BasicAvroJobIntermediateWritable extends AbstractAvroJob {
+public class BasicAvroIntermediateWritableJob extends AbstractAvroJob {
 	public static final Schema OUTPUT_SCHEMA;
 
 	static {
 		OUTPUT_SCHEMA = Schemas.createRecordSchema(
-				BasicAvroJobIntermediateWritable.class, "Output", new Field(
-						"identifier", Schema.create(Type.LONG), "identifier", null), new Field(
+				BasicAvroIntermediateWritableJob.class, "Output", new Field(
+						"key", Schema.create(Type.LONG), "key", null), new Field(
 						"count", Schema.create(Type.LONG), "count", null));
 	}
 
@@ -103,9 +103,9 @@ public class BasicAvroJobIntermediateWritable extends AbstractAvroJob {
 			for (LongWritable value : values) {
 				count += (Long) value.get();
 			}
-			output.put("identifier", key.get());
+			output.put("key", key.get());
 			output.put("count", count);
-			System.out.println("Output key=" + output.get("identifier") + "  count="
+			System.out.println("Output key=" + output.get("key") + "  count="
 					+ output.get("count"));
 			context.write(new AvroKey<GenericRecord>(output), null);
 		}
