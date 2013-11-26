@@ -54,9 +54,7 @@ import org.apache.log4j.Logger;
  * <li><em>output.path</em> - Output path job will write to</li>
  * <li><em>temp.path</em> - Temporary path under which intermediate files are
  * stored</li>
- * <li><em>retention.count</em> - Number of days to retain in output directory</li>
  * <li><em>num.reducers</em> - Number of reducers to use</li>
- * <li><em>use.combiner</em> - Whether to use a combiner or not</li>
  * <li><em>counters.path</em> - Path to store job counters in</li>
  * <li><em>use.latest.expansion</em> - Expand input paths with #LATEST</li>
  * </ul>
@@ -70,13 +68,21 @@ import org.apache.log4j.Logger;
  * 
  * <p>
  * The <em>num.reducers</em> fixes the number of reducers. When not set the
- * number of reducers is computed based on the input size.
+ * number of reducers is computed based on the input size. It can also be
+ * configured with the Hadoop <em>mapred.reduce.tasks</em> setting.
  * </p>
  * 
  * <p>
  * The <em>temp.path</em> property defines the parent directory for temporary
  * paths, not the temporary path itself. Temporary paths are created under this
- * directory with an <em>hourglass-</em> prefix followed by a GUID.
+ * directory and suffixed with the <em>output.path</em>
+ * </p>
+ * 
+ * <p>
+ * The <em>use.latest.expansion</em> property defines whether to expand the input
+ * paths which contain the <em>#LATEST</em> suffix. When set to <em>true</true>
+ * the folders are sorted lexicographically and the last path is chosen. If the
+ * folder names are dates the latest date is to be chosen. 
  * </p>
  * 
  * <p>
@@ -103,7 +109,6 @@ public abstract class AbstractJob extends Configured {
 	private String _name;
 	private Path _countersParentPath;
 	private Integer _numReducers;
-	private Integer _retentionCount;
 	private List<Path> _inputPaths;
 	private Path _outputPath;
 	private Path _tempPath = new Path("/tmp");
@@ -209,11 +214,6 @@ public abstract class AbstractJob extends Configured {
 			setTempPath(new Path((String) _props.get("temp.path")));
 		}
 
-		if (_props.get("retention.count") != null) {
-			setRetentionCount(Integer.parseInt((String) _props
-					.get("retention.count")));
-		}
-
 		if (_props.get("num.reducers") != null) {
 			setNumReducers(Integer
 					.parseInt((String) _props.get("num.reducers")));
@@ -315,27 +315,6 @@ public abstract class AbstractJob extends Configured {
 	}
 
 	/**
-	 * Gets the number of days of data which will be retained in the output
-	 * path. Only the latest will be kept. Older paths will be removed.
-	 * 
-	 * @return retention count
-	 */
-	public Integer getRetentionCount() {
-		return _retentionCount;
-	}
-
-	/**
-	 * Sets the number of days of data which will be retained in the output
-	 * path. Only the latest will be kept. Older paths will be removed. Can also
-	 * be set with <em>retention.count</em>.
-	 * 
-	 * @param retentionCount
-	 */
-	public void setRetentionCount(Integer retentionCount) {
-		this._retentionCount = retentionCount;
-	}
-
-	/**
 	 * Gets the input paths. Multiple input paths imply a join is to be
 	 * performed.
 	 * 
@@ -429,7 +408,7 @@ public abstract class AbstractJob extends Configured {
 	 * @return Random temporary path
 	 */
 	protected Path randomTempPath() {
-		return new Path(_tempPath, String.format("hourglass-%s",
+		return new Path(_tempPath, String.format("mr-%s",
 				UUID.randomUUID()));
 	}
 
@@ -469,12 +448,6 @@ public abstract class AbstractJob extends Configured {
 		if (_outputPath == null) {
 			throw new IllegalArgumentException("Output path is not specified.");
 		}
-	}
-
-	/**
-	 * Initialization required before running job.
-	 */
-	protected void initialize() {
 	}
 
 	public abstract void setupInputFormat(StagedOutputJob job)
@@ -540,7 +513,7 @@ public abstract class AbstractJob extends Configured {
 
 		Path outputPath = getOutputPath();
 		final StagedOutputJob job = StagedOutputJob.createStagedJob(getConf(),
-				getName(), inputPaths, "/tmp" + outputPath.toString(),
+				getName(), inputPaths, _tempPath + outputPath.toString(),
 				outputPath.toString(), _log);
 
 		job.setMapperClass(getMapperClass());
