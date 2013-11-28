@@ -28,7 +28,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.RawComparator;
@@ -635,7 +634,6 @@ public abstract class AbstractJob extends Configured
         _log.info("Symlink detected, set 'mapred.create.symlink' to 'yes'");
         getConf().set("mapred.create.symlink", "yes");
       }
-      DistributedCache.createSymlink(getConf());
     }
 
     final StagedOutputJob job =

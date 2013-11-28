@@ -52,20 +52,6 @@ public abstract class AbstractAvroJob extends AbstractJob
   @Override
   public void setupInputFormat(Job job) throws IOException
   {
-    // if (job.getInputPaths().size() > 1) {
-    // if (_combineInputs) {
-    // job.setInputFormatClass(CombinedAvroMultipleInputsKeyInputFormat.class);
-    // } else {
-    // job.setInputFormatClass(AvroMultipleInputsKeyInputFormat.class);
-    // }
-    //
-    // for (Path p : getInputPaths()) {
-    // Schema inputSchema = PathUtils.getSchemaFromPath(
-    // getFileSystem(), p);
-    // AvroMultipleInputsUtil.setInputKeySchemaForPath(job,
-    // inputSchema, p.toString());
-    // }
-    // } else {
     if (_combineInputs)
     {
       job.setInputFormatClass(CombinedAvroKeyInputFormat.class);
@@ -78,7 +64,6 @@ public abstract class AbstractAvroJob extends AbstractJob
     // Schema inputSchema = PathUtils.getSchemaFromPath(getFileSystem(),
     // getInputPaths().get(0));
     // AvroJob.setInputKeySchema(job, inputSchema);
-    // }
   }
 
   @Override
@@ -89,6 +74,7 @@ public abstract class AbstractAvroJob extends AbstractJob
       if (getMapOutputKeySchema() != null)
       {
         AvroJob.setMapOutputKeySchema(job, getMapOutputKeySchema());
+        _log.info(String.format("Set map output key schema: %s", getMapOutputKeySchema().toString()));
       }
       else
       {
@@ -100,6 +86,7 @@ public abstract class AbstractAvroJob extends AbstractJob
       if (getMapOutputValueSchema() != null)
       {
         AvroJob.setMapOutputValueSchema(job, getMapOutputValueSchema());
+        _log.info(String.format("Set map output value schema: %s", getMapOutputValueSchema().toString()));
       }
       else
       {
@@ -113,6 +100,7 @@ public abstract class AbstractAvroJob extends AbstractJob
   {
     job.setOutputFormatClass(AvroKeyOutputFormat.class);
     AvroJob.setOutputKeySchema(job, getReduceOutputSchema());
+    _log.info(String.format("Set output key schema: %s", getReduceOutputSchema().toString()));
   }
 
   /**

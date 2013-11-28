@@ -119,7 +119,7 @@ public class TestAbstractJob extends TestBase
     writeCacheFile();
     configureAndRunJob(new BasicDistributedCacheJob(true), "BasicDistributedCacheJob", _inputPath, _outputPath);
   }
-  
+
   @Test
   public void testDistributedCacheJobWithoutSymlink() throws IOException,
       InterruptedException,
