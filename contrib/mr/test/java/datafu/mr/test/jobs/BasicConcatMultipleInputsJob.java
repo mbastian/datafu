@@ -19,66 +19,84 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import datafu.mr.jobs.AbstractJob;
-import datafu.mr.jobs.StagedOutputJob;
 
-public class BasicConcatMultipleInputsJob extends AbstractJob {
+/**
+ * Basic MR job with multiple input paths
+ * <p>
+ * The job concats the diffent values for the same key.
+ * 
+ * @author Mathieu Bastian
+ */
+public class BasicConcatMultipleInputsJob extends AbstractJob
+{
 
-	@Override
-	public void setupInputFormat(StagedOutputJob job) throws IOException {
-		job.setInputFormatClass(SequenceFileInputFormat.class);
-	}
+  @Override
+  public void setupInputFormat(Job job) throws IOException
+  {
+    job.setInputFormatClass(SequenceFileInputFormat.class);
+  }
 
-	@Override
-	public void setupIntermediateFormat(StagedOutputJob job) throws IOException {
-	}
+  @Override
+  public void setupIntermediateFormat(Job job) throws IOException
+  {
+  }
 
-	@Override
-	public void setupOutputFormat(StagedOutputJob job) throws IOException {
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(Text.class);
-	}
+  @Override
+  public void setupOutputFormat(Job job) throws IOException
+  {
+    job.setOutputFormatClass(SequenceFileOutputFormat.class);
+    job.setOutputKeyClass(IntWritable.class);
+    job.setOutputValueClass(Text.class);
+  }
 
-	@Override
-	protected Class<?> getMapOutputKeyClass() {
-		return IntWritable.class;
-	}
+  @Override
+  protected Class<?> getMapOutputKeyClass()
+  {
+    return IntWritable.class;
+  }
 
-	@Override
-	protected Class<?> getMapOutputValueClass() {
-		return Text.class;
-	}
+  @Override
+  protected Class<?> getMapOutputValueClass()
+  {
+    return Text.class;
+  }
 
-	@Override
-	public Class<? extends Mapper> getMapperClass() {
-		return Mapper.class;
-	}
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Class<? extends Mapper> getMapperClass()
+  {
+    return Mapper.class;
+  }
 
-	@Override
-	public Class<? extends Reducer> getReducerClass() {
-		return Reduce.class;
-	}
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Class<? extends Reducer> getReducerClass()
+  {
+    return Reduce.class;
+  }
 
-	public static class Reduce extends
-			Reducer<IntWritable, Text, IntWritable, Text> {
+  public static class Reduce extends Reducer<IntWritable, Text, IntWritable, Text>
+  {
 
-		@Override
-		public void reduce(IntWritable key, Iterable<Text> values,
-				Context context) throws IOException, InterruptedException {
+    @Override
+    public void reduce(IntWritable key, Iterable<Text> values, Context context) throws IOException,
+        InterruptedException
+    {
 
-			StringBuilder stringBuilder = new StringBuilder();
-			for (Text val : values) {
-				stringBuilder.append(val.toString());
-			}
-			System.out.println("REDUCIN: " + key.get() + " -> "
-					+ stringBuilder.toString());
-			context.write(key, new Text(stringBuilder.toString()));
-		}
-	}
+      StringBuilder stringBuilder = new StringBuilder();
+      for (Text val : values)
+      {
+        stringBuilder.append(val.toString());
+      }
+      System.out.println("REDUCIN: " + key.get() + " -> " + stringBuilder.toString());
+      context.write(key, new Text(stringBuilder.toString()));
+    }
+  }
 }

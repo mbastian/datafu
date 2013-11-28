@@ -32,82 +32,99 @@ import org.apache.hadoop.mapreduce.Reducer;
 import datafu.mr.avro.Schemas;
 import datafu.mr.jobs.AbstractAvroJob;
 
-public class BasicAvroIntermediateWritableJob extends AbstractAvroJob {
-	public static final Schema OUTPUT_SCHEMA;
+/**
+ * Basic Avro MR job with intermediate format using Hadoop Writable
+ * 
+ * @author Mathieu Bastian
+ */
+public class BasicAvroIntermediateWritableJob extends AbstractAvroJob
+{
+  public static final Schema OUTPUT_SCHEMA;
 
-	static {
-		OUTPUT_SCHEMA = Schemas.createRecordSchema(
-				BasicAvroIntermediateWritableJob.class, "Output", new Field(
-						"key", Schema.create(Type.LONG), "key", null), new Field(
-						"count", Schema.create(Type.LONG), "count", null));
-	}
+  static
+  {
+    OUTPUT_SCHEMA =
+        Schemas.createRecordSchema(BasicAvroIntermediateWritableJob.class,
+                                   "Output",
+                                   new Field("key", Schema.create(Type.LONG), "key", null),
+                                   new Field("count", Schema.create(Type.LONG), "count", null));
+  }
 
-	@Override
-	protected Class<?> getMapOutputKeyClass() {
-		return LongWritable.class;
-	}
+  @Override
+  protected Class<?> getMapOutputKeyClass()
+  {
+    return LongWritable.class;
+  }
 
-	@Override
-	protected Class<?> getMapOutputValueClass() {
-		return LongWritable.class;
-	}
+  @Override
+  protected Class<?> getMapOutputValueClass()
+  {
+    return LongWritable.class;
+  }
 
-	@Override
-	protected Schema getReduceOutputSchema() {
-		return OUTPUT_SCHEMA;
-	}
+  @Override
+  protected Schema getReduceOutputSchema()
+  {
+    return OUTPUT_SCHEMA;
+  }
 
-	@Override
-	public Class<? extends Mapper> getMapperClass() {
-		return Map.class;
-	}
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Class<? extends Mapper> getMapperClass()
+  {
+    return Map.class;
+  }
 
-	@Override
-	public Class<? extends Reducer> getReducerClass() {
-		return Reduce.class;
-	}
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Class<? extends Reducer> getReducerClass()
+  {
+    return Reduce.class;
+  }
 
-	public static class Map
-			extends
-			Mapper<AvroKey<GenericRecord>, NullWritable, LongWritable, LongWritable> {
-		private final LongWritable key;
-		private final LongWritable value;
+  public static class Map extends Mapper<AvroKey<GenericRecord>, NullWritable, LongWritable, LongWritable>
+  {
+    private final LongWritable key;
+    private final LongWritable value;
 
-		public Map() {
-			key = new LongWritable();
-			value = new LongWritable(1L);
-		}
+    public Map()
+    {
+      key = new LongWritable();
+      value = new LongWritable(1L);
+    }
 
-		@Override
-		protected void map(AvroKey<GenericRecord> input, NullWritable unused,
-				Context context) throws IOException, InterruptedException {
-			key.set((Long) input.datum().get("id"));
-			System.out.println("Input key=" + key.get());
-			context.write(key, value);
-		}
-	}
+    @Override
+    protected void map(AvroKey<GenericRecord> input, NullWritable unused, Context context) throws IOException,
+        InterruptedException
+    {
+      key.set((Long) input.datum().get("id"));
+      System.out.println("Input key=" + key.get());
+      context.write(key, value);
+    }
+  }
 
-	public static class Reduce
-			extends
-			Reducer<LongWritable, LongWritable, AvroKey<GenericRecord>, NullWritable> {
-		private final GenericRecord output;
+  public static class Reduce extends Reducer<LongWritable, LongWritable, AvroKey<GenericRecord>, NullWritable>
+  {
+    private final GenericRecord output;
 
-		public Reduce() {
-			output = new GenericData.Record(OUTPUT_SCHEMA);
-		}
+    public Reduce()
+    {
+      output = new GenericData.Record(OUTPUT_SCHEMA);
+    }
 
-		@Override
-		protected void reduce(LongWritable key, Iterable<LongWritable> values,
-				Context context) throws IOException, InterruptedException {
-			long count = 0L;
-			for (LongWritable value : values) {
-				count += (Long) value.get();
-			}
-			output.put("key", key.get());
-			output.put("count", count);
-			System.out.println("Output key=" + output.get("key") + "  count="
-					+ output.get("count"));
-			context.write(new AvroKey<GenericRecord>(output), null);
-		}
-	}
+    @Override
+    protected void reduce(LongWritable key, Iterable<LongWritable> values, Context context) throws IOException,
+        InterruptedException
+    {
+      long count = 0L;
+      for (LongWritable value : values)
+      {
+        count += (Long) value.get();
+      }
+      output.put("key", key.get());
+      output.put("count", count);
+      System.out.println("Output key=" + output.get("key") + "  count=" + output.get("count"));
+      context.write(new AvroKey<GenericRecord>(output), null);
+    }
+  }
 }

@@ -35,161 +35,174 @@ import datafu.mr.fs.PathUtils;
  * Estimates the number of reducers needed based on input size.
  * 
  * <p>
- * This sums the size of the inputs and uses bytes-per-reducer settings to
- * compute the number of reducers. By default, the bytes-per-reducer is 256 MB.
- * This means that if the total input size is 1 GB, the total number of reducers
- * computed will be 4.
+ * This sums the size of the inputs and uses bytes-per-reducer settings to compute the number of
+ * reducers. By default, the bytes-per-reducer is 256 MB. This means that if the total input size is
+ * 1 GB, the total number of reducers computed will be 4.
  * </p>
  * 
  * <p>
- * The bytes-per-reducer can be configured through properties provided in the
- * constructor. The default bytes-per-reducer can be overriden by setting
- * <em>num.reducers.bytes.per.reducer</em>. For example, if 536870912 (512 MB)
- * is used for this setting, then 2 reducers would be used for 1 GB.
+ * The bytes-per-reducer can be configured through properties provided in the constructor. The
+ * default bytes-per-reducer can be overriden by setting <em>num.reducers.bytes.per.reducer</em>.
+ * For example, if 536870912 (512 MB) is used for this setting, then 2 reducers would be used for 1
+ * GB.
  * </p>
  * 
  * <p>
- * The bytes-per-reducer can also be configured separately for different types
- * of inputs. Inputs can be identified by a tag. For example, if an input is
- * tagged with <em>mydata</em>, then the reducers for this input data can be
- * configured with <em>num.reducers.mydata.bytes.per.reducer</em>.
+ * The bytes-per-reducer can also be configured separately for different types of inputs. Inputs can
+ * be identified by a tag. For example, if an input is tagged with <em>mydata</em>, then the
+ * reducers for this input data can be configured with
+ * <em>num.reducers.mydata.bytes.per.reducer</em>.
  * </p>
  * 
  * @author "Matthew Hayes"
  * 
  */
-public class ReduceEstimator {
-	private final Logger _log = Logger.getLogger(ReduceEstimator.class);
+public class ReduceEstimator
+{
+  private final Logger _log = Logger.getLogger(ReduceEstimator.class);
 
-	private final Set<Path> inputPaths = new HashSet<Path>();
-	private final Map<Path, String> pathToTag = new HashMap<Path, String>();
-	private final Map<String, Long> tagToBytesPerReducer = new HashMap<String, Long>();
-	private final FileSystem fs;
+  private final Set<Path> inputPaths = new HashSet<Path>();
+  private final Map<Path, String> pathToTag = new HashMap<Path, String>();
+  private final Map<String, Long> tagToBytesPerReducer = new HashMap<String, Long>();
+  private final FileSystem fs;
 
-	private final static String DEFAULT = "default";
-	private final static Long DEFAULT_BYTES_PER_REDUCER = 256L * 1024L * 1024L; // 256
-																				// MB
+  private final static String DEFAULT = "default";
+  private final static Long DEFAULT_BYTES_PER_REDUCER = 256L * 1024L * 1024L; // 256
 
-	public ReduceEstimator(FileSystem fs, Properties props) {
-		this.fs = fs;
+  // MB
 
-		if (props != null) {
-			for (Object o : props.keySet()) {
-				String key = (String) o;
-				if (key.startsWith("num.reducers.")) {
-					if (key.equals("num.reducers.bytes.per.reducer")) {
-						tagToBytesPerReducer.put(DEFAULT,
-								Long.parseLong(props.getProperty(key)));
-					} else {
-						Pattern p = Pattern
-								.compile("num\\.reducers\\.([a-z]+)\\.bytes\\.per\\.reducer");
-						Matcher m = p.matcher(key);
-						if (m.matches()) {
-							String tag = m.group(1);
-							tagToBytesPerReducer.put(tag,
-									Long.parseLong(props.getProperty(key)));
-						} else {
-							throw new RuntimeException(
-									"Property not recognized: " + key);
-						}
-					}
-				}
-			}
-		}
+  public ReduceEstimator(FileSystem fs, Properties props)
+  {
+    this.fs = fs;
 
-		if (!tagToBytesPerReducer.containsKey(DEFAULT)) {
-			long defaultValue = DEFAULT_BYTES_PER_REDUCER;
-			_log.info(String.format(
-					"No default bytes per reducer set, using %.2f MB",
-					toMB(defaultValue)));
-			tagToBytesPerReducer.put(DEFAULT, defaultValue);
-		}
-	}
+    if (props != null)
+    {
+      for (Object o : props.keySet())
+      {
+        String key = (String) o;
+        if (key.startsWith("num.reducers."))
+        {
+          if (key.equals("num.reducers.bytes.per.reducer"))
+          {
+            tagToBytesPerReducer.put(DEFAULT, Long.parseLong(props.getProperty(key)));
+          }
+          else
+          {
+            Pattern p = Pattern.compile("num\\.reducers\\.([a-z]+)\\.bytes\\.per\\.reducer");
+            Matcher m = p.matcher(key);
+            if (m.matches())
+            {
+              String tag = m.group(1);
+              tagToBytesPerReducer.put(tag, Long.parseLong(props.getProperty(key)));
+            }
+            else
+            {
+              throw new RuntimeException("Property not recognized: " + key);
+            }
+          }
+        }
+      }
+    }
 
-	public void addInputPath(Path input) {
-		addInputPath(DEFAULT, input);
-	}
+    if (!tagToBytesPerReducer.containsKey(DEFAULT))
+    {
+      long defaultValue = DEFAULT_BYTES_PER_REDUCER;
+      _log.info(String.format("No default bytes per reducer set, using %.2f MB", toMB(defaultValue)));
+      tagToBytesPerReducer.put(DEFAULT, defaultValue);
+    }
+  }
 
-	public void addInputPath(String tag, Path input) {
-		if (!inputPaths.contains(input)) {
-			inputPaths.add(input);
-			pathToTag.put(input, tag);
-		} else {
-			throw new RuntimeException("Already added input: " + input);
-		}
-	}
+  public void addInputPath(Path input)
+  {
+    addInputPath(DEFAULT, input);
+  }
 
-	public int getNumReducers() throws IOException {
-		Map<String, Long> bytesPerTag = getTagToInputBytes();
+  public void addInputPath(String tag, Path input)
+  {
+    if (!inputPaths.contains(input))
+    {
+      inputPaths.add(input);
+      pathToTag.put(input, tag);
+    }
+    else
+    {
+      throw new RuntimeException("Already added input: " + input);
+    }
+  }
 
-		double numReducers = 0.0;
-		for (String tag : bytesPerTag.keySet()) {
-			long bytes = bytesPerTag.get(tag);
-			_log.info(String.format(
-					"Found %d bytes (%.2f GB) for inputs tagged with '%s'",
-					bytes, toGB(bytes), tag));
-			Long bytesPerReducer = tagToBytesPerReducer.get(tag);
-			if (bytesPerReducer == null) {
-				bytesPerReducer = tagToBytesPerReducer.get(DEFAULT);
+  public int getNumReducers() throws IOException
+  {
+    Map<String, Long> bytesPerTag = getTagToInputBytes();
 
-				if (bytesPerReducer == null) {
-					throw new RuntimeException(
-							"Could not determine bytes per reducer");
-				}
+    double numReducers = 0.0;
+    for (String tag : bytesPerTag.keySet())
+    {
+      long bytes = bytesPerTag.get(tag);
+      _log.info(String.format("Found %d bytes (%.2f GB) for inputs tagged with '%s'", bytes, toGB(bytes), tag));
+      Long bytesPerReducer = tagToBytesPerReducer.get(tag);
+      if (bytesPerReducer == null)
+      {
+        bytesPerReducer = tagToBytesPerReducer.get(DEFAULT);
 
-				_log.info(String
-						.format("No configured bytes per reducer for '%s', using default value of %.2f MB",
-								tag, toMB(bytesPerReducer)));
-			} else {
-				_log.info(String
-						.format("Using configured bytes per reducer for '%s' of %.2f MB",
-								tag, toMB(bytesPerReducer)));
-			}
+        if (bytesPerReducer == null)
+        {
+          throw new RuntimeException("Could not determine bytes per reducer");
+        }
 
-			double partialNumReducers = bytes / (double) bytesPerReducer;
+        _log.info(String.format("No configured bytes per reducer for '%s', using default value of %.2f MB",
+                                tag,
+                                toMB(bytesPerReducer)));
+      }
+      else
+      {
+        _log.info(String.format("Using configured bytes per reducer for '%s' of %.2f MB", tag, toMB(bytesPerReducer)));
+      }
 
-			_log.info(String.format("Reducers computed for '%s' is %.2f", tag,
-					partialNumReducers));
+      double partialNumReducers = bytes / (double) bytesPerReducer;
 
-			numReducers += bytes / (double) bytesPerReducer;
-		}
+      _log.info(String.format("Reducers computed for '%s' is %.2f", tag, partialNumReducers));
 
-		int finalNumReducers = Math.max(1, (int) Math.ceil(numReducers));
+      numReducers += bytes / (double) bytesPerReducer;
+    }
 
-		_log.info(String.format("Final computed reducers is: %d",
-				finalNumReducers));
+    int finalNumReducers = Math.max(1, (int) Math.ceil(numReducers));
 
-		return finalNumReducers;
-	}
+    _log.info(String.format("Final computed reducers is: %d", finalNumReducers));
 
-	private static double toGB(long bytes) {
-		return bytes / (1024.0 * 1024.0 * 1024.0);
-	}
+    return finalNumReducers;
+  }
 
-	private static double toMB(long bytes) {
-		return bytes / (1024.0 * 1024.0);
-	}
+  private static double toGB(long bytes)
+  {
+    return bytes / (1024.0 * 1024.0 * 1024.0);
+  }
 
-	/**
-	 * Gets the total number of bytes per tag.
-	 * 
-	 * @return Map from tag to total bytes
-	 * @throws IOException
-	 */
-	private Map<String, Long> getTagToInputBytes() throws IOException {
-		Map<String, Long> result = new HashMap<String, Long>();
-		for (Path input : inputPaths) {
-			long bytes = PathUtils.countBytes(fs, input);
-			String tag = pathToTag.get(input);
-			if (tag == null)
-				throw new RuntimeException("Could not find tag for input: "
-						+ input);
-			Long current = result.get(tag);
-			if (current == null)
-				current = 0L;
-			current += bytes;
-			result.put(tag, current);
-		}
-		return result;
-	}
+  private static double toMB(long bytes)
+  {
+    return bytes / (1024.0 * 1024.0);
+  }
+
+  /**
+   * Gets the total number of bytes per tag.
+   * 
+   * @return Map from tag to total bytes
+   * @throws IOException
+   */
+  private Map<String, Long> getTagToInputBytes() throws IOException
+  {
+    Map<String, Long> result = new HashMap<String, Long>();
+    for (Path input : inputPaths)
+    {
+      long bytes = PathUtils.countBytes(fs, input);
+      String tag = pathToTag.get(input);
+      if (tag == null)
+        throw new RuntimeException("Could not find tag for input: " + input);
+      Long current = result.get(tag);
+      if (current == null)
+        current = 0L;
+      current += bytes;
+      result.put(tag, current);
+    }
+    return result;
+  }
 }

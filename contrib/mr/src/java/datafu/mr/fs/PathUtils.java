@@ -49,282 +49,316 @@ import org.apache.log4j.Logger;
  * @author "Matthew Hayes"
  * 
  */
-public class PathUtils {
-	private static Logger _log = Logger.getLogger(PathUtils.class);
+public class PathUtils
+{
+  private static Logger _log = Logger.getLogger(PathUtils.class);
 
-	public final static TimeZone timeZone = TimeZone.getTimeZone("UTC");
-	public static final SimpleDateFormat datedPathFormat = new SimpleDateFormat(
-			"yyyyMMdd");
-	public static final SimpleDateFormat nestedDatedPathFormat = new SimpleDateFormat(
-			"yyyy/MM/dd");
-	private static final Pattern timestampPathPattern = Pattern
-			.compile(".+/(\\d{8})");
-	private static final Pattern dailyPathPattern = Pattern
-			.compile("(.+)/(\\d{4}/\\d{2}/\\d{2})");
+  public final static TimeZone timeZone = TimeZone.getTimeZone("UTC");
+  public static final SimpleDateFormat datedPathFormat = new SimpleDateFormat("yyyyMMdd");
+  public static final SimpleDateFormat nestedDatedPathFormat = new SimpleDateFormat("yyyy/MM/dd");
+  private static final Pattern timestampPathPattern = Pattern.compile(".+/(\\d{8})");
+  private static final Pattern dailyPathPattern = Pattern.compile("(.+)/(\\d{4}/\\d{2}/\\d{2})");
 
-	/**
-	 * Filters out paths starting with "." and "_".
-	 */
-	public static final PathFilter nonHiddenPathFilter = new PathFilter() {
-		@Override
-		public boolean accept(Path path) {
-			String s = path.getName().toString();
-			return !s.startsWith(".") && !s.startsWith("_");
-		}
-	};
+  /**
+   * Filters out paths starting with "." and "_".
+   */
+  public static final PathFilter nonHiddenPathFilter = new PathFilter()
+  {
+    @Override
+    public boolean accept(Path path)
+    {
+      String s = path.getName().toString();
+      return !s.startsWith(".") && !s.startsWith("_");
+    }
+  };
 
-	static {
-		datedPathFormat.setTimeZone(timeZone);
-		nestedDatedPathFormat.setTimeZone(timeZone);
-	}
+  static
+  {
+    datedPathFormat.setTimeZone(timeZone);
+    nestedDatedPathFormat.setTimeZone(timeZone);
+  }
 
-	/**
-	 * Delete all but the last N days of paths matching the "yyyyMMdd" format.
-	 * 
-	 * @param fs
-	 * @param path
-	 * @param retentionCount
-	 * @throws IOException
-	 */
-	public static void keepLatestDatedPaths(FileSystem fs, Path path,
-			int retentionCount) throws IOException {
-		LinkedList<DatePath> outputs = new LinkedList<DatePath>(
-				PathUtils.findDatedPaths(fs, path));
+  /**
+   * Delete all but the last N days of paths matching the "yyyyMMdd" format.
+   * 
+   * @param fs
+   * @param path
+   * @param retentionCount
+   * @throws IOException
+   */
+  public static void keepLatestDatedPaths(FileSystem fs, Path path, int retentionCount) throws IOException
+  {
+    LinkedList<DatePath> outputs = new LinkedList<DatePath>(PathUtils.findDatedPaths(fs, path));
 
-		while (outputs.size() > retentionCount) {
-			DatePath toDelete = outputs.removeFirst();
-			_log.info(String.format("Removing %s", toDelete.getPath()));
-			fs.delete(toDelete.getPath(), true);
-		}
-	}
+    while (outputs.size() > retentionCount)
+    {
+      DatePath toDelete = outputs.removeFirst();
+      _log.info(String.format("Removing %s", toDelete.getPath()));
+      fs.delete(toDelete.getPath(), true);
+    }
+  }
 
-	/**
-	 * Delete all but the last N days of paths matching the "yyyy/MM/dd" format.
-	 * 
-	 * @param fs
-	 * @param path
-	 * @param retentionCount
-	 * @throws IOException
-	 */
-	public static void keepLatestNestedDatedPaths(FileSystem fs, Path path,
-			int retentionCount) throws IOException {
-		List<DatePath> outputPaths = PathUtils.findNestedDatedPaths(fs, path);
+  /**
+   * Delete all but the last N days of paths matching the "yyyy/MM/dd" format.
+   * 
+   * @param fs
+   * @param path
+   * @param retentionCount
+   * @throws IOException
+   */
+  public static void keepLatestNestedDatedPaths(FileSystem fs, Path path, int retentionCount) throws IOException
+  {
+    List<DatePath> outputPaths = PathUtils.findNestedDatedPaths(fs, path);
 
-		if (outputPaths.size() > retentionCount) {
-			Collections.sort(outputPaths);
-			_log.info(String.format("Applying retention range policy"));
-			for (DatePath output : outputPaths.subList(0, outputPaths.size()
-					- retentionCount)) {
-				_log.info(String.format(
-						"Removing %s because it is outside retention range",
-						output.getPath()));
-				fs.delete(output.getPath(), true);
-			}
-		}
-	}
+    if (outputPaths.size() > retentionCount)
+    {
+      Collections.sort(outputPaths);
+      _log.info(String.format("Applying retention range policy"));
+      for (DatePath output : outputPaths.subList(0, outputPaths.size() - retentionCount))
+      {
+        _log.info(String.format("Removing %s because it is outside retention range", output.getPath()));
+        fs.delete(output.getPath(), true);
+      }
+    }
+  }
 
-	/**
-	 * List all paths matching the "yyyy/MM/dd" format under a given path.
-	 * 
-	 * @param fs
-	 *            file system
-	 * @param input
-	 *            path to search under
-	 * @return paths
-	 * @throws IOException
-	 */
-	public static List<DatePath> findNestedDatedPaths(FileSystem fs, Path input)
-			throws IOException {
-		List<DatePath> inputDates = new ArrayList<DatePath>();
+  /**
+   * List all paths matching the "yyyy/MM/dd" format under a given path.
+   * 
+   * @param fs
+   *          file system
+   * @param input
+   *          path to search under
+   * @return paths
+   * @throws IOException
+   */
+  public static List<DatePath> findNestedDatedPaths(FileSystem fs, Path input) throws IOException
+  {
+    List<DatePath> inputDates = new ArrayList<DatePath>();
 
-		FileStatus[] pathsStatus = fs.globStatus(new Path(input, "*/*/*"),
-				nonHiddenPathFilter);
+    FileStatus[] pathsStatus = fs.globStatus(new Path(input, "*/*/*"), nonHiddenPathFilter);
 
-		if (pathsStatus == null) {
-			return inputDates;
-		}
+    if (pathsStatus == null)
+    {
+      return inputDates;
+    }
 
-		for (FileStatus pathStatus : pathsStatus) {
-			Matcher matcher = dailyPathPattern.matcher(pathStatus.getPath()
-					.toString());
-			if (matcher.matches()) {
-				String datePath = matcher.group(2);
-				Date date;
-				try {
-					date = nestedDatedPathFormat.parse(datePath);
-				} catch (ParseException e) {
-					continue;
-				}
+    for (FileStatus pathStatus : pathsStatus)
+    {
+      Matcher matcher = dailyPathPattern.matcher(pathStatus.getPath().toString());
+      if (matcher.matches())
+      {
+        String datePath = matcher.group(2);
+        Date date;
+        try
+        {
+          date = nestedDatedPathFormat.parse(datePath);
+        }
+        catch (ParseException e)
+        {
+          continue;
+        }
 
-				Calendar cal = Calendar.getInstance(timeZone);
+        Calendar cal = Calendar.getInstance(timeZone);
 
-				cal.setTimeInMillis(date.getTime());
+        cal.setTimeInMillis(date.getTime());
 
-				inputDates
-						.add(new DatePath(cal.getTime(), pathStatus.getPath()));
-			}
-		}
+        inputDates.add(new DatePath(cal.getTime(), pathStatus.getPath()));
+      }
+    }
 
-		return inputDates;
-	}
+    return inputDates;
+  }
 
-	/**
-	 * List all paths matching the "yyyyMMdd" format under a given path.
-	 * 
-	 * @param fs
-	 *            file system
-	 * @param path
-	 *            path to search under
-	 * @return paths
-	 * @throws IOException
-	 */
-	public static List<DatePath> findDatedPaths(FileSystem fs, Path path)
-			throws IOException {
-		FileStatus[] outputPaths = fs.listStatus(path, nonHiddenPathFilter);
+  /**
+   * List all paths matching the "yyyyMMdd" format under a given path.
+   * 
+   * @param fs
+   *          file system
+   * @param path
+   *          path to search under
+   * @return paths
+   * @throws IOException
+   */
+  public static List<DatePath> findDatedPaths(FileSystem fs, Path path) throws IOException
+  {
+    FileStatus[] outputPaths = fs.listStatus(path, nonHiddenPathFilter);
 
-		List<DatePath> outputs = new ArrayList<DatePath>();
+    List<DatePath> outputs = new ArrayList<DatePath>();
 
-		if (outputPaths != null) {
-			for (FileStatus outputPath : outputPaths) {
-				Date date;
-				try {
-					date = datedPathFormat
-							.parse(outputPath.getPath().getName());
-				} catch (ParseException e) {
-					continue;
-				}
+    if (outputPaths != null)
+    {
+      for (FileStatus outputPath : outputPaths)
+      {
+        Date date;
+        try
+        {
+          date = datedPathFormat.parse(outputPath.getPath().getName());
+        }
+        catch (ParseException e)
+        {
+          continue;
+        }
 
-				outputs.add(new DatePath(date, outputPath.getPath()));
-			}
-		}
+        outputs.add(new DatePath(date, outputPath.getPath()));
+      }
+    }
 
-		Collections.sort(outputs);
+    Collections.sort(outputs);
 
-		return outputs;
-	}
+    return outputs;
+  }
 
-	/**
-	 * Gets the schema from a given Avro data file.
-	 * 
-	 * @param fs
-	 * @param path
-	 * @return The schema read from the data file's metadata.
-	 * @throws IOException
-	 */
-	public static Schema getSchemaFromFile(FileSystem fs, Path path)
-			throws IOException {
-		FSDataInputStream dataInputStream = fs.open(path);
-		DatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>();
-		DataFileStream<GenericRecord> dataFileStream = new DataFileStream<GenericRecord>(
-				dataInputStream, reader);
-		try {
-			return dataFileStream.getSchema();
-		} finally {
-			dataFileStream.close();
-		}
-	}
+  /**
+   * Gets the schema from a given Avro data file.
+   * 
+   * @param fs
+   * @param path
+   * @return The schema read from the data file's metadata.
+   * @throws IOException
+   */
+  public static Schema getSchemaFromFile(FileSystem fs, Path path) throws IOException
+  {
+    FSDataInputStream dataInputStream = fs.open(path);
+    DatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>();
+    DataFileStream<GenericRecord> dataFileStream = new DataFileStream<GenericRecord>(dataInputStream, reader);
+    try
+    {
+      return dataFileStream.getSchema();
+    }
+    finally
+    {
+      dataFileStream.close();
+    }
+  }
 
-	/**
-	 * Gets the schema for the first Avro file under the given path.
-	 * 
-	 * @param path
-	 *            path to fetch schema for
-	 * @return Avro schema
-	 * @throws IOException
-	 */
-	public static Schema getSchemaFromPath(FileSystem fs, Path path)
-			throws IOException {
-		return getSchemaFromFile(fs,
-				fs.listStatus(path, nonHiddenPathFilter)[0].getPath());
-	}
+  /**
+   * Gets the schema for the first Avro file under the given path.
+   * 
+   * @param path
+   *          path to fetch schema for
+   * @return Avro schema
+   * @throws IOException
+   */
+  public static Schema getSchemaFromPath(FileSystem fs, Path path) throws IOException
+  {
+    return getSchemaFromFile(fs, fs.listStatus(path, nonHiddenPathFilter)[0].getPath());
+  }
 
-	/**
-	 * Sums the size of all files listed under a given path.
-	 * 
-	 * @param fs
-	 *            file system
-	 * @param path
-	 *            path to count bytes for
-	 * @return total bytes under path
-	 * @throws IOException
-	 */
-	public static long countBytes(FileSystem fs, Path path) throws IOException {
-		FileStatus[] files = fs.listStatus(path, nonHiddenPathFilter);
-		long totalForPath = 0L;
-		for (FileStatus file : files) {
-			totalForPath += file.getLen();
-		}
-		return totalForPath;
-	}
+  /**
+   * Sums the size of all files listed under a given path.
+   * 
+   * @param fs
+   *          file system
+   * @param path
+   *          path to count bytes for
+   * @return total bytes under path
+   * @throws IOException
+   */
+  public static long countBytes(FileSystem fs, Path path) throws IOException
+  {
+    FileStatus[] files = fs.listStatus(path, nonHiddenPathFilter);
+    long totalForPath = 0L;
+    for (FileStatus file : files)
+    {
+      totalForPath += file.getLen();
+    }
+    return totalForPath;
+  }
 
-	/**
-	 * Gets the date for a path in the "yyyyMMdd" format.
-	 * 
-	 * @param path
-	 *            path to check
-	 * @return date for path
-	 */
-	public static Date getDateForDatedPath(Path path) {
-		Matcher matcher = timestampPathPattern.matcher(path.toString());
+  /**
+   * Gets the date for a path in the "yyyyMMdd" format.
+   * 
+   * @param path
+   *          path to check
+   * @return date for path
+   */
+  public static Date getDateForDatedPath(Path path)
+  {
+    Matcher matcher = timestampPathPattern.matcher(path.toString());
 
-		if (!matcher.matches()) {
-			throw new RuntimeException("Unexpected input filename: " + path);
-		}
+    if (!matcher.matches())
+    {
+      throw new RuntimeException("Unexpected input filename: " + path);
+    }
 
-		try {
-			return PathUtils.datedPathFormat.parse(matcher.group(1));
-		} catch (ParseException e) {
-			throw new RuntimeException("Unexpected input filename: " + path);
-		}
-	}
+    try
+    {
+      return PathUtils.datedPathFormat.parse(matcher.group(1));
+    }
+    catch (ParseException e)
+    {
+      throw new RuntimeException("Unexpected input filename: " + path);
+    }
+  }
 
-	/**
-	 * Gets the date for a path in the "yyyy/MM/dd" format.
-	 * 
-	 * @param path
-	 *            path to check
-	 * @return date
-	 */
-	public static Date getDateForNestedDatedPath(Path path) {
-		Matcher matcher = dailyPathPattern.matcher(path.toString());
+  /**
+   * Gets the date for a path in the "yyyy/MM/dd" format.
+   * 
+   * @param path
+   *          path to check
+   * @return date
+   */
+  public static Date getDateForNestedDatedPath(Path path)
+  {
+    Matcher matcher = dailyPathPattern.matcher(path.toString());
 
-		if (!matcher.matches()) {
-			throw new RuntimeException("Unexpected input filename: " + path);
-		}
+    if (!matcher.matches())
+    {
+      throw new RuntimeException("Unexpected input filename: " + path);
+    }
 
-		try {
-			return PathUtils.nestedDatedPathFormat.parse(matcher.group(2));
-		} catch (ParseException e) {
-			throw new RuntimeException("Unexpected input filename: " + path);
-		}
-	}
+    try
+    {
+      return PathUtils.nestedDatedPathFormat.parse(matcher.group(2));
+    }
+    catch (ParseException e)
+    {
+      throw new RuntimeException("Unexpected input filename: " + path);
+    }
+  }
 
-	/**
-	 * Gets the root path for a path in the "yyyy/MM/dd" format. This is part of
-	 * the path preceding the "yyyy/MM/dd" portion.
-	 * 
-	 * @param path
-	 * @return
-	 */
-	public static Path getNestedPathRoot(Path path) {
-		Matcher matcher = dailyPathPattern.matcher(path.toString());
+  /**
+   * Gets the root path for a path in the "yyyy/MM/dd" format. This is part of the path preceding
+   * the "yyyy/MM/dd" portion.
+   * 
+   * @param path
+   *          path to get root
+   * @return root path
+   */
+  public static Path getNestedPathRoot(Path path)
+  {
+    Matcher matcher = dailyPathPattern.matcher(path.toString());
 
-		if (!matcher.matches()) {
-			throw new RuntimeException("Unexpected input filename: " + path);
-		}
+    if (!matcher.matches())
+    {
+      throw new RuntimeException("Unexpected input filename: " + path);
+    }
 
-		return new Path(matcher.group(1));
-	}
+    return new Path(matcher.group(1));
+  }
 
-	public static int getInputPathIndex(JobContext context, Path path) {
-		Path[] paths = FileInputFormat.getInputPaths(context);
-		int i = 0;
-		for (Path p : paths) {
-			if (path.equals(p)) {
-				return i;
-			}
-			i++;
-		}
-		return -1;
-	}
+  /**
+   * Returns the index of the given path in the list of input paths.
+   * 
+   * @param context
+   *          job context
+   * @param path
+   *          path to get index
+   * @return path index
+   */
+  public static int getInputPathIndex(JobContext context, Path path)
+  {
+    Path[] paths = FileInputFormat.getInputPaths(context);
+    int i = 0;
+    for (Path p : paths)
+    {
+      if (path.equals(p))
+      {
+        return i;
+      }
+      i++;
+    }
+    return -1;
+  }
 }

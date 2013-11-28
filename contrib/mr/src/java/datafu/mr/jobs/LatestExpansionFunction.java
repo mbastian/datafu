@@ -26,60 +26,68 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
-public class LatestExpansionFunction {
-	private final Logger log;
-	public static final String LATEST_SUFFIX = "#LATEST";
-	private final FileSystem fs;
+public class LatestExpansionFunction
+{
+  private final Logger log;
+  public static final String LATEST_SUFFIX = "#LATEST";
+  private final FileSystem fs;
 
-	public LatestExpansionFunction(final FileSystem fs, Logger log) {
-		this.log = log;
-		this.fs = fs;
-	}
+  public LatestExpansionFunction(final FileSystem fs, Logger log)
+  {
+    this.log = log;
+    this.fs = fs;
+  }
 
-	public String apply(String path) {
-		if (path.contains(LATEST_SUFFIX)) {
-			String actualPath = path.substring(0, path.indexOf(LATEST_SUFFIX));
-			String suffix = path.substring(path.indexOf(LATEST_SUFFIX))
-					.replaceAll(LATEST_SUFFIX, "");
+  public String apply(String path)
+  {
+    if (path.contains(LATEST_SUFFIX))
+    {
+      String actualPath = path.substring(0, path.indexOf(LATEST_SUFFIX));
+      String suffix = path.substring(path.indexOf(LATEST_SUFFIX)).replaceAll(LATEST_SUFFIX, "");
 
-			FileStatus[] files;
-			try {
-				files = fs.listStatus(new Path(actualPath));
-			} catch (IOException e) {
-				final String message = String.format(
-						"Exception when looking for expansion of %s",
-						LATEST_SUFFIX);
+      FileStatus[] files;
+      try
+      {
+        files = fs.listStatus(new Path(actualPath));
+      }
+      catch (IOException e)
+      {
+        final String message = String.format("Exception when looking for expansion of %s", LATEST_SUFFIX);
 
-				log.error(message, e);
-				throw new RuntimeException(message, e);
-			}
+        log.error(message, e);
+        throw new RuntimeException(message, e);
+      }
 
-			List<FileStatus> filtered = new ArrayList<FileStatus>();
-			for (FileStatus fs : files) {
-				String name = fs.getPath().getName();
-				if (!name.startsWith("_") && !name.startsWith(".")) {
-					filtered.add(fs);
-				}
-			}
-			files = filtered.toArray(new FileStatus[0]);
+      List<FileStatus> filtered = new ArrayList<FileStatus>();
+      for (FileStatus fs : files)
+      {
+        String name = fs.getPath().getName();
+        if (!name.startsWith("_") && !name.startsWith("."))
+        {
+          filtered.add(fs);
+        }
+      }
+      files = filtered.toArray(new FileStatus[0]);
 
-			if (files.length == 0) {
-				throw new RuntimeException(
-						String.format(
-								"No files found under path[%s] when resolving path[%s]. fs[%s]",
-								actualPath, path, fs));
-			}
+      if (files.length == 0)
+      {
+        throw new RuntimeException(String.format("No files found under path[%s] when resolving path[%s]. fs[%s]",
+                                                 actualPath,
+                                                 path,
+                                                 fs));
+      }
 
-			Arrays.sort(files, new Comparator<FileStatus>() {
-				@Override
-				public int compare(FileStatus o1, FileStatus o2) {
-					return o1.getPath().getName()
-							.compareTo(o2.getPath().getName());
-				}
-			});
-			return files[files.length - 1].getPath().toUri().getPath() + suffix;
-		}
+      Arrays.sort(files, new Comparator<FileStatus>()
+      {
+        @Override
+        public int compare(FileStatus o1, FileStatus o2)
+        {
+          return o1.getPath().getName().compareTo(o2.getPath().getName());
+        }
+      });
+      return files[files.length - 1].getPath().toUri().getPath() + suffix;
+    }
 
-		return path;
-	}
+    return path;
+  }
 }

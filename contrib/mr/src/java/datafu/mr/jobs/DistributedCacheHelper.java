@@ -34,66 +34,74 @@ import org.apache.hadoop.fs.Path;
  * @author "Matthew Hayes"
  * 
  */
-public class DistributedCacheHelper {
-	/**
-	 * Deserializes an object from a path in HDFS.
-	 * 
-	 * @param conf
-	 *            Hadoop configuration
-	 * @param path
-	 *            Path to deserialize from
-	 * @return Deserialized object
-	 * @throws IOException
-	 */
-	public static Object readObject(Configuration conf,
-			org.apache.hadoop.fs.Path path) throws IOException {
-		String localPath = null;
-		Path[] localCacheFiles = DistributedCache.getLocalCacheFiles(conf);
-		for (Path localCacheFile : localCacheFiles) {
-			if (localCacheFile.toString().endsWith(path.toString())) {
-				localPath = localCacheFile.toString();
-				break;
-			}
-		}
-		if (localPath == null) {
-			throw new RuntimeException("Could not find " + path
-					+ " in local cache");
-		}
-		FileInputStream inputStream = new FileInputStream(new File(localPath));
-		ObjectInputStream objStream = new ObjectInputStream(inputStream);
+public class DistributedCacheHelper
+{
+  /**
+   * Deserializes an object from a path in HDFS.
+   * 
+   * @param conf
+   *          Hadoop configuration
+   * @param path
+   *          Path to deserialize from
+   * @return Deserialized object
+   * @throws IOException
+   */
+  public static Object readObject(Configuration conf, org.apache.hadoop.fs.Path path) throws IOException
+  {
+    String localPath = null;
+    Path[] localCacheFiles = DistributedCache.getLocalCacheFiles(conf);
+    for (Path localCacheFile : localCacheFiles)
+    {
+      if (localCacheFile.toString().endsWith(path.toString()))
+      {
+        localPath = localCacheFile.toString();
+        break;
+      }
+    }
+    if (localPath == null)
+    {
+      throw new RuntimeException("Could not find " + path + " in local cache");
+    }
+    FileInputStream inputStream = new FileInputStream(new File(localPath));
+    ObjectInputStream objStream = new ObjectInputStream(inputStream);
 
-		try {
-			try {
-				return objStream.readObject();
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			}
-		} finally {
-			objStream.close();
-			inputStream.close();
-		}
-	}
+    try
+    {
+      try
+      {
+        return objStream.readObject();
+      }
+      catch (ClassNotFoundException e)
+      {
+        throw new RuntimeException(e);
+      }
+    }
+    finally
+    {
+      objStream.close();
+      inputStream.close();
+    }
+  }
 
-	/**
-	 * Serializes an object to a path in HDFS and adds the file to the
-	 * distributed cache.
-	 * 
-	 * @param conf
-	 *            Hadoop configuration
-	 * @param obj
-	 *            Object to serialize
-	 * @param path
-	 *            Path to serialize object to
-	 * @throws IOException
-	 */
-	public static void writeObject(Configuration conf, Object obj,
-			org.apache.hadoop.fs.Path path) throws IOException {
-		FileSystem fs = FileSystem.get(conf);
-		FSDataOutputStream outputStream = fs.create(path, true);
-		ObjectOutputStream objStream = new ObjectOutputStream(outputStream);
-		objStream.writeObject(obj);
-		objStream.close();
-		outputStream.close();
-		DistributedCache.addCacheFile(path.toUri(), conf);
-	}
+  /**
+   * Serializes an object to a path in HDFS and adds the file to the distributed cache.
+   * 
+   * @param conf
+   *          Hadoop configuration
+   * @param obj
+   *          Object to serialize
+   * @param path
+   *          Path to serialize object to
+   * @throws IOException
+   */
+  public static void writeObject(Configuration conf, Object obj, org.apache.hadoop.fs.Path path) throws IOException
+  {
+    FileSystem fs = FileSystem.get(conf);
+    FSDataOutputStream outputStream = fs.create(path, true);
+    ObjectOutputStream objStream = new ObjectOutputStream(outputStream);
+    objStream.writeObject(obj);
+    objStream.close();
+    outputStream.close();
+    DistributedCache.addCacheFile(path.toUri(), conf);
+  }
 }

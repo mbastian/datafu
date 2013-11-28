@@ -5,17 +5,22 @@ import java.io.IOException;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapred.AvroValue;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 
 import datafu.mr.avro.Schemas;
 import datafu.mr.jobs.AbstractAvroJob;
 
+/**
+ * Basic Avro MR job with multiple inputs
+ * 
+ * @author Mathieu Bastian
+ */
 public class BasicAvroMultipleInputsJob extends AbstractAvroJob
 {
   public static final Schema KEY_SCHEMA;
@@ -56,12 +61,14 @@ public class BasicAvroMultipleInputsJob extends AbstractAvroJob
     return OUTPUT_SCHEMA;
   }
 
+  @SuppressWarnings("rawtypes")
   @Override
   public Class<? extends Mapper> getMapperClass()
   {
     return TheMapper.class;
   }
 
+  @SuppressWarnings("rawtypes")
   @Override
   public Class<? extends Reducer> getReducerClass()
   {

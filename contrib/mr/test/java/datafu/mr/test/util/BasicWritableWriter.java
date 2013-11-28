@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
 
-@SuppressWarnings("rawtypes")
 public class BasicWritableWriter<K extends Writable, V extends Writable>
 {
   private final Path _outputPath;

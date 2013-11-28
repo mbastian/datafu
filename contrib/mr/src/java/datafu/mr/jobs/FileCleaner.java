@@ -33,53 +33,60 @@ import org.apache.log4j.Logger;
  * @author "Matthew Hayes"
  * 
  */
-public class FileCleaner {
-	private final Logger log = Logger.getLogger(FileCleaner.class);
+public class FileCleaner
+{
+  private final Logger log = Logger.getLogger(FileCleaner.class);
 
-	private final Set<Path> garbage = new HashSet<Path>();
-	private final FileSystem fs;
+  private final Set<Path> garbage = new HashSet<Path>();
+  private final FileSystem fs;
 
-	public FileCleaner(FileSystem fs) {
-		this.fs = fs;
-	}
+  public FileCleaner(FileSystem fs)
+  {
+    this.fs = fs;
+  }
 
-	/**
-	 * Add a path to be removed later.
-	 * 
-	 * @param path
-	 * @return added path
-	 */
-	public Path add(Path path) {
-		garbage.add(path);
-		return path;
-	}
+  /**
+   * Add a path to be removed later.
+   * 
+   * @param path
+   * @return added path
+   */
+  public Path add(Path path)
+  {
+    garbage.add(path);
+    return path;
+  }
 
-	/**
-	 * Add a path to be removed later.
-	 * 
-	 * @param path
-	 * @return added path
-	 */
-	public String add(String path) {
-		garbage.add(new Path(path));
-		return path;
-	}
+  /**
+   * Add a path to be removed later.
+   * 
+   * @param path
+   * @return added path
+   */
+  public String add(String path)
+  {
+    garbage.add(new Path(path));
+    return path;
+  }
 
-	/**
-	 * Removes added paths from the file system.
-	 * 
-	 * @throws IOException
-	 */
-	@SuppressWarnings("unchecked")
-	public void clean() throws IOException {
-		List<Path> sorted = new ArrayList<Path>(garbage);
-		Collections.sort(sorted);
-		for (Path p : sorted) {
-			if (fs.exists(p)) {
-				log.info(String.format("Removing %s", p));
-				fs.delete(p, true);
-			}
-		}
-		garbage.clear();
-	}
+  /**
+   * Removes added paths from the file system.
+   * 
+   * @throws IOException
+   */
+  @SuppressWarnings("unchecked")
+  public void clean() throws IOException
+  {
+    List<Path> sorted = new ArrayList<Path>(garbage);
+    Collections.sort(sorted);
+    for (Path p : sorted)
+    {
+      if (fs.exists(p))
+      {
+        log.info(String.format("Removing %s", p));
+        fs.delete(p, true);
+      }
+    }
+    garbage.clear();
+  }
 }

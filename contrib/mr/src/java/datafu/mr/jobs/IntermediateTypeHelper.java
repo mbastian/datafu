@@ -20,39 +20,44 @@ import java.lang.reflect.Type;
 
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class IntermediateTypeHelper {
+public class IntermediateTypeHelper
+{
 
-	@SuppressWarnings("rawtypes")
-	public static Type[] getMapperTypes(Class mapperClass) {
-		if (!Mapper.class.isAssignableFrom(mapperClass)) {
-			throw new IllegalArgumentException(
-					"The input class should inherit from "
-							+ Mapper.class.getName());
-		}
-		Type[] types = null;
-		while (types == null && mapperClass != null) {
-			if (mapperClass.getSuperclass() != null
-					&& mapperClass.getSuperclass().equals(Mapper.class)) {
-				types = ((ParameterizedType) mapperClass.getGenericSuperclass())
-						.getActualTypeArguments();
-				for (int i = 0; i < types.length; i++) {
-					if (types[i] instanceof ParameterizedType) {
-						types[i] = ((ParameterizedType) types[i]).getRawType();
-					}
-				}
-			}
-			mapperClass = mapperClass.getSuperclass();
-		}
-		return types;
-	}
+  @SuppressWarnings("rawtypes")
+  public static Type[] getMapperTypes(Class mapperClass)
+  {
+    if (!Mapper.class.isAssignableFrom(mapperClass))
+    {
+      throw new IllegalArgumentException("The input class should inherit from " + Mapper.class.getName());
+    }
+    Type[] types = null;
+    while (types == null && mapperClass != null)
+    {
+      if (mapperClass.getSuperclass() != null && mapperClass.getSuperclass().equals(Mapper.class))
+      {
+        types = ((ParameterizedType) mapperClass.getGenericSuperclass()).getActualTypeArguments();
+        for (int i = 0; i < types.length; i++)
+        {
+          if (types[i] instanceof ParameterizedType)
+          {
+            types[i] = ((ParameterizedType) types[i]).getRawType();
+          }
+        }
+      }
+      mapperClass = mapperClass.getSuperclass();
+    }
+    return types;
+  }
 
-	@SuppressWarnings("rawtypes")
-	public static Class getMapperOutputKeyClass(Class mapperClass) {
-		return (Class) getMapperTypes(mapperClass)[2];
-	}
+  @SuppressWarnings("rawtypes")
+  public static Class getMapperOutputKeyClass(Class mapperClass)
+  {
+    return (Class) getMapperTypes(mapperClass)[2];
+  }
 
-	@SuppressWarnings("rawtypes")
-	public static Class getMapperOutputValueClass(Class mapperClass) {
-		return (Class) getMapperTypes(mapperClass)[3];
-	}
+  @SuppressWarnings("rawtypes")
+  public static Class getMapperOutputValueClass(Class mapperClass)
+  {
+    return (Class) getMapperTypes(mapperClass)[3];
+  }
 }

@@ -38,54 +38,54 @@ import org.apache.log4j.Logger;
  * @author "Matthew Hayes"
  * 
  * @param <T>
- *            Type of data to be read
+ *          Type of data to be read
  */
-public class CombinedAvroKeyInputFormat<T> extends
-		CombineFileInputFormat<AvroKey<T>, NullWritable> {
-	private final Logger LOG = Logger
-			.getLogger(CombinedAvroKeyInputFormat.class);
+public class CombinedAvroKeyInputFormat<T> extends CombineFileInputFormat<AvroKey<T>, NullWritable>
+{
+  private final Logger LOG = Logger.getLogger(CombinedAvroKeyInputFormat.class);
 
-	public static class CombinedAvroKeyRecordReader<T> extends
-			AvroKeyRecordReader<T> {
-		private CombineFileSplit inputSplit;
-		private Integer idx;
+  public static class CombinedAvroKeyRecordReader<T> extends AvroKeyRecordReader<T>
+  {
+    private CombineFileSplit inputSplit;
+    private Integer idx;
 
-		public CombinedAvroKeyRecordReader(CombineFileSplit inputSplit,
-				TaskAttemptContext context, Integer idx) {
-			super(AvroJob.getInputKeySchema(context.getConfiguration()));
-			this.inputSplit = inputSplit;
-			this.idx = idx;
-		}
+    public CombinedAvroKeyRecordReader(CombineFileSplit inputSplit, TaskAttemptContext context, Integer idx)
+    {
+      super(AvroJob.getInputKeySchema(context.getConfiguration()));
+      this.inputSplit = inputSplit;
+      this.idx = idx;
+    }
 
-		@Override
-		public void initialize(InputSplit inputSplit, TaskAttemptContext context)
-				throws IOException, InterruptedException {
-			this.inputSplit = (CombineFileSplit) inputSplit;
+    @Override
+    public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
+        InterruptedException
+    {
+      this.inputSplit = (CombineFileSplit) inputSplit;
 
-			FileSplit fileSplit = new FileSplit(this.inputSplit.getPath(idx),
-					this.inputSplit.getOffset(idx),
-					this.inputSplit.getLength(idx),
-					this.inputSplit.getLocations());
+      FileSplit fileSplit =
+          new FileSplit(this.inputSplit.getPath(idx),
+                        this.inputSplit.getOffset(idx),
+                        this.inputSplit.getLength(idx),
+                        this.inputSplit.getLocations());
 
-			super.initialize(fileSplit, context);
-		}
-	}
+      super.initialize(fileSplit, context);
+    }
+  }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public RecordReader<AvroKey<T>, NullWritable> createRecordReader(
-			InputSplit inputSplit, TaskAttemptContext context)
-			throws IOException {
-		Schema readerSchema = AvroJob.getInputKeySchema(context
-				.getConfiguration());
-		if (null == readerSchema) {
-			throw new RuntimeException("Could not determine input schema");
-		}
+  @SuppressWarnings("unchecked")
+  @Override
+  public RecordReader<AvroKey<T>, NullWritable> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) throws IOException
+  {
+    Schema readerSchema = AvroJob.getInputKeySchema(context.getConfiguration());
+    if (null == readerSchema)
+    {
+      throw new RuntimeException("Could not determine input schema");
+    }
 
-		Object c = CombinedAvroKeyRecordReader.class;
-		return new CombineFileRecordReader<AvroKey<T>, NullWritable>(
-				(CombineFileSplit) inputSplit, context,
-				(Class<? extends RecordReader<AvroKey<T>, NullWritable>>) c);
-	}
+    Object c = CombinedAvroKeyRecordReader.class;
+    return new CombineFileRecordReader<AvroKey<T>, NullWritable>((CombineFileSplit) inputSplit,
+                                                                 context,
+                                                                 (Class<? extends RecordReader<AvroKey<T>, NullWritable>>) c);
+  }
 
 }

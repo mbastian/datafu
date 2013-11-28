@@ -27,39 +27,43 @@ import org.apache.hadoop.fs.Path;
  * @author "Matthew Hayes"
  * 
  */
-public class DatePath implements Comparable<DatePath> {
-	private static final SimpleDateFormat timestampFormat = new SimpleDateFormat(
-			"yyyyMMddHHmmss");
+public class DatePath implements Comparable<DatePath>
+{
+  private static final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
-	private final Date date;
-	private final Path path;
+  private final Date date;
+  private final Path path;
 
-	public DatePath(Date date, Path path) {
-		this.date = date;
-		this.path = path;
-	}
+  public DatePath(Date date, Path path)
+  {
+    this.date = date;
+    this.path = path;
+  }
 
-	public Date getDate() {
-		return this.date;
-	}
+  public Date getDate()
+  {
+    return this.date;
+  }
 
-	public Path getPath() {
-		return this.path;
-	}
+  public Path getPath()
+  {
+    return this.path;
+  }
 
-	public static DatePath createDatedPath(Path parent, Date date) {
-		return new DatePath(date, new Path(parent,
-				PathUtils.datedPathFormat.format(date)));
-	}
+  public static DatePath createDatedPath(Path parent, Date date)
+  {
+    return new DatePath(date, new Path(parent, PathUtils.datedPathFormat.format(date)));
+  }
 
-	@Override
-	public String toString() {
-		return String.format("[date=%s, path=%s]",
-				timestampFormat.format(this.date), this.path.toString());
-	}
+  @Override
+  public String toString()
+  {
+    return String.format("[date=%s, path=%s]", timestampFormat.format(this.date), this.path.toString());
+  }
 
-	@Override
-	public int compareTo(DatePath o) {
-		return this.date.compareTo(o.date);
-	}
+  @Override
+  public int compareTo(DatePath o)
+  {
+    return this.date.compareTo(o.date);
+  }
 }
