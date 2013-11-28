@@ -17,70 +17,132 @@ package datafu.mr.test.jobs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
+import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import datafu.mr.jobs.AbstractJob;
-import datafu.mr.jobs.StagedOutputJob;
 
-public class BasicDistributedCacheJob extends AbstractJob {
+/**
+ * Basic MR job which uses the distributed cache.
+ * 
+ * @author Mathieu Bastian
+ */
+public class BasicDistributedCacheJob extends AbstractJob
+{
+  private final boolean useSymlink;
 
-	@Override
-	public void setupInputFormat(StagedOutputJob job) throws IOException {
-		job.setInputFormatClass(SequenceFileInputFormat.class);
-	}
+  public BasicDistributedCacheJob(boolean useSymlink)
+  {
+    this.useSymlink = useSymlink;
+  }
 
-	@Override
-	public void setupIntermediateFormat(StagedOutputJob job) throws IOException {
-	}
+  @Override
+  public void setupInputFormat(Job job) throws IOException
+  {
+    job.setInputFormatClass(SequenceFileInputFormat.class);
+  }
 
-	@Override
-	public void setupOutputFormat(StagedOutputJob job) throws IOException {
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(IntWritable.class);
-	}
+  @Override
+  public void setupIntermediateFormat(Job job) throws IOException
+  {
+  }
 
-	@Override
-	public Class<? extends Mapper> getMapperClass() {
-		return Map.class;
-	}
+  @Override
+  public void setupOutputFormat(Job job) throws IOException
+  {
+    job.setOutputFormatClass(SequenceFileOutputFormat.class);
+    job.setOutputKeyClass(IntWritable.class);
+    job.setOutputValueClass(IntWritable.class);
+  }
 
-	@Override
-	public Class<? extends Reducer> getReducerClass() {
-		return null;
-	}
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Class<? extends Mapper> getMapperClass()
+  {
+    return useSymlink ? MapWithSymlink.class : MapWithoutSymlink.class;
+  }
 
-	@Override
-	protected Class<?> getMapOutputKeyClass() {
-		return IntWritable.class;
-	}
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Class<? extends Reducer> getReducerClass()
+  {
+    return null;
+  }
 
-	@Override
-	protected Class<?> getMapOutputValueClass() {
-		return IntWritable.class;
-	}
+  @Override
+  protected Class<?> getMapOutputKeyClass()
+  {
+    return IntWritable.class;
+  }
 
-	public static class Map extends
-			Mapper<IntWritable, IntWritable, IntWritable, IntWritable> {
+  @Override
+  protected Class<?> getMapOutputValueClass()
+  {
+    return IntWritable.class;
+  }
 
-		@Override
-		protected void setup(Context context) throws IOException,
-				InterruptedException {
-			File distributedCacheFile = new File("suffix");
-			if (!distributedCacheFile.exists()) {
-				throw new RuntimeException("The distributed cache file '"
-						+ distributedCacheFile.getPath() + "' doesn't exist");
-			}
-		}
+  @Override
+  public List<Path> getDistributedCachePaths()
+  {
+    return Arrays.asList(new Path[] { new Path(useSymlink ? "/cache#suffix" : "/cache") });
+  }
 
-		@Override
-		public void map(IntWritable key, IntWritable value, Context context)
-				throws IOException, InterruptedException {
-		}
-	}
+  public static class MapWithSymlink extends Mapper<IntWritable, IntWritable, IntWritable, IntWritable>
+  {
+
+    @Override
+    protected void setup(Context context) throws IOException,
+        InterruptedException
+    {
+      File distributedCacheFile = new File("suffix");
+      if (!distributedCacheFile.exists())
+      {
+        throw new RuntimeException("The distributed cache file '" + distributedCacheFile.getPath() + "' doesn't exist");
+      }
+    }
+
+    @Override
+    public void map(IntWritable key, IntWritable value, Context context) throws IOException,
+        InterruptedException
+    {
+    }
+  }
+
+  public static class MapWithoutSymlink extends Mapper<IntWritable, IntWritable, IntWritable, IntWritable>
+  {
+
+    @Override
+    protected void setup(Context context) throws IOException,
+        InterruptedException
+    {
+      Path[] cacheFiles = DistributedCache.getLocalCacheFiles(context.getConfiguration());
+      boolean found = false;
+      for (Path p : cacheFiles)
+      {
+        if (p.getName().equals("cache"))
+        {
+          found = true;
+        }
+      }
+      if (!found)
+      {
+        throw new RuntimeException("The distributed cache file doesn't exist");
+      }
+    }
+
+    @Override
+    public void map(IntWritable key, IntWritable value, Context context) throws IOException,
+        InterruptedException
+    {
+    }
+  }
 }
