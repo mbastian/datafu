@@ -680,16 +680,6 @@ public abstract class AbstractJob extends Configured
       job.setPartitionerClass(getPartitionerClass());
     }
 
-    if (getGroupingComparator() != null)
-    {
-      job.setGroupingComparatorClass(getGroupingComparator());
-    }
-
-    if (getSortComparator() != null)
-    {
-      job.setSortComparatorClass(getSortComparator());
-    }
-
     if (getMapOutputKeyClass() != null)
     {
       job.setMapOutputKeyClass(getMapOutputKeyClass());
@@ -703,6 +693,16 @@ public abstract class AbstractJob extends Configured
     setupInputFormat(job);
     setupIntermediateFormat(job);
     setupOutputFormat(job);
+
+    if (getGroupingComparator() != null)
+    {
+      job.setGroupingComparatorClass(getGroupingComparator());
+    }
+
+    if (getSortComparator() != null)
+    {
+      job.setSortComparatorClass(getSortComparator());
+    }
 
     config(job.getConfiguration());
 

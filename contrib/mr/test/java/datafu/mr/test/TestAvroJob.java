@@ -39,6 +39,7 @@ import org.testng.annotations.Test;
 import datafu.mr.avro.Schemas;
 import datafu.mr.fs.PathUtils;
 import datafu.mr.jobs.AbstractAvroJob;
+import datafu.mr.test.jobs.BasicAvroIntermediateObjectJob;
 import datafu.mr.test.jobs.BasicAvroIntermediateWritableJob;
 import datafu.mr.test.jobs.BasicAvroJob;
 import datafu.mr.test.jobs.BasicAvroMultipleInputsJob;
@@ -113,13 +114,26 @@ public class TestAvroJob extends TestBase
   }
 
   @Test
+  public void basicAvroJobIntermediateObjectTest() throws IOException,
+      InterruptedException,
+      ClassNotFoundException
+  {
+    initBasicJob();
+    configureAndRunJob(new BasicAvroIntermediateObjectJob(),
+                       "BasicAvroJobIntermediateObjectJob",
+                       _inputPath,
+                       _outputPath);
+    checkBasicJob();
+  }
+
+  @Test
   public void basicAvroJobIntermediateWritableTest() throws IOException,
       InterruptedException,
       ClassNotFoundException
   {
     initBasicJob();
     configureAndRunJob(new BasicAvroIntermediateWritableJob(),
-                       "BasicAvroJobIntermediateWritable",
+                       "BasicAvroJobIntermediateWritableJob",
                        _inputPath,
                        _outputPath);
     checkBasicJob();
