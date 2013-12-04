@@ -60,8 +60,6 @@ public class BasicDistributedCacheJob extends AbstractJob
   public void setupOutputFormat(Job job) throws IOException
   {
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
-    job.setOutputKeyClass(IntWritable.class);
-    job.setOutputValueClass(IntWritable.class);
   }
 
   @SuppressWarnings("rawtypes")
@@ -76,18 +74,6 @@ public class BasicDistributedCacheJob extends AbstractJob
   public Class<? extends Reducer> getReducerClass()
   {
     return null;
-  }
-
-  @Override
-  protected Class<?> getMapOutputKeyClass()
-  {
-    return IntWritable.class;
-  }
-
-  @Override
-  protected Class<?> getMapOutputValueClass()
-  {
-    return IntWritable.class;
   }
 
   @Override

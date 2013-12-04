@@ -52,8 +52,6 @@ public class BasicMapOnlyJob extends AbstractJob
   public void setupOutputFormat(Job job) throws IOException
   {
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(LongWritable.class);
   }
 
   @SuppressWarnings("rawtypes")
@@ -68,18 +66,6 @@ public class BasicMapOnlyJob extends AbstractJob
   public Class<? extends Reducer> getReducerClass()
   {
     return null;
-  }
-
-  @Override
-  protected Class<?> getMapOutputKeyClass()
-  {
-    return Text.class;
-  }
-
-  @Override
-  protected Class<?> getMapOutputValueClass()
-  {
-    return LongWritable.class;
   }
 
   public static class MapInverse extends Mapper<LongWritable, Text, Text, LongWritable>

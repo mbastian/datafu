@@ -583,6 +583,26 @@ public abstract class AbstractJob extends Configured
   }
 
   /**
+   * Gets the reduce output key class.
+   * 
+   * @return reduce output key class
+   */
+  protected Class<?> getOutputKeyClass()
+  {
+    return null;
+  }
+
+  /**
+   * Gets the reduce output value class
+   * 
+   * @return reduce output value class
+   */
+  protected Class<?> getOutputValueClass()
+  {
+    return null;
+  }
+
+  /**
    * Run the job.
    * 
    * @throws IOException
@@ -684,10 +704,80 @@ public abstract class AbstractJob extends Configured
     {
       job.setMapOutputKeyClass(getMapOutputKeyClass());
     }
+    else
+    {
+      Class<?> keyClass = IntermediateTypeHelper.getMapperOutputKeyClass(getMapperClass());
+      if (keyClass != null)
+      {
+        job.setMapOutputKeyClass(keyClass);
+        _log.info(String.format("Discovered map output key class: %s", keyClass.getName()));
+      }
+      else
+      {
+        _log.warn("Could not discover the map output key class");
+      }
+    }
 
     if (getMapOutputValueClass() != null)
     {
       job.setMapOutputValueClass(getMapOutputValueClass());
+    }
+    else
+    {
+      Class<?> valueClass = IntermediateTypeHelper.getMapperOutputValueClass(getMapperClass());
+      if (valueClass != null)
+      {
+        job.setMapOutputValueClass(valueClass);
+        _log.info(String.format("Discovered map output value class: %s", valueClass.getName()));
+      }
+      else
+      {
+        _log.warn("Could not discover the map output key class");
+      }
+    }
+
+    if (getReducerClass() != null)
+    {
+      if (getOutputKeyClass() != null)
+      {
+        job.setOutputKeyClass(getOutputKeyClass());
+      }
+      else
+      {
+        Class<?> keyClass = IntermediateTypeHelper.getReducerOutputKeyClass(getReducerClass());
+        if (keyClass != null)
+        {
+          job.setOutputKeyClass(keyClass);
+          _log.info(String.format("Discovered reducer output key class: %s", keyClass.getName()));
+        }
+        else
+        {
+          _log.warn("Could not discover the reduce output key class");
+        }
+      }
+
+      if (getOutputValueClass() != null)
+      {
+        job.setOutputValueClass(getOutputValueClass());
+      }
+      else
+      {
+        Class<?> valueClass = IntermediateTypeHelper.getReducerOutputValueClass(getReducerClass());
+        if (valueClass != null)
+        {
+          job.setOutputValueClass(valueClass);
+          _log.info(String.format("Discovered reducer output value class: %s", valueClass.getName()));
+        }
+        else
+        {
+          _log.warn("Could not discover the reduce output key class");
+        }
+      }
+    }
+    else
+    {
+      job.setOutputKeyClass(job.getMapOutputKeyClass());
+      job.setOutputValueClass(job.getMapOutputValueClass());
     }
 
     setupInputFormat(job);

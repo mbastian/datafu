@@ -66,18 +66,6 @@ public class BasicAvroIntermediateObjectJob extends AbstractAvroJob
     return Reduce.class;
   }
 
-  @Override
-  protected Schema getMapOutputKeySchema()
-  {
-    return ReflectData.get().getSchema(User.class);
-  }
-
-  @Override
-  protected Schema getMapOutputValueSchema()
-  {
-    return ReflectData.get().getSchema(LoginEvent.class);
-  }
-
   public static class Map extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<User>, AvroValue<LoginEvent>>
   {
     private final User key = new User();
@@ -111,6 +99,7 @@ public class BasicAvroIntermediateObjectJob extends AbstractAvroJob
       long count = 0l;
       for (Iterator<AvroValue<LoginEvent>> iterator = values.iterator(); iterator.hasNext();)
       {
+        iterator.next();
         count++;
       }
       output.put("key", (long) user.datum().id);

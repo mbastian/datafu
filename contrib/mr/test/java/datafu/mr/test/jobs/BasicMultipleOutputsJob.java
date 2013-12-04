@@ -71,18 +71,6 @@ public class BasicMultipleOutputsJob extends AbstractJob
     return MOReduce.class;
   }
 
-  @Override
-  protected Class<?> getMapOutputKeyClass()
-  {
-    return IntWritable.class;
-  }
-
-  @Override
-  protected Class<?> getMapOutputValueClass()
-  {
-    return Text.class;
-  }
-
   public static class MOReduce extends Reducer<IntWritable, Text, IntWritable, Text>
   {
     private MultipleOutputs<IntWritable, Text> mos;

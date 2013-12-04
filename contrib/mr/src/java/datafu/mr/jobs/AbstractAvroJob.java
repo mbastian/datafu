@@ -16,16 +16,20 @@
 package datafu.mr.jobs;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.util.Properties;
 
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
 import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapred.AvroValue;
 import org.apache.avro.mapreduce.AvroJob;
 import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
+import org.apache.avro.reflect.ReflectData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import datafu.mr.avro.CombinedAvroKeyInputFormat;
@@ -94,6 +98,17 @@ public abstract class AbstractAvroJob extends AbstractJob
       else
       {
         // Infer schema
+        ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(getMapperClass(), Mapper.class)[2];
+        Class<?> keyClass = (Class<?>) type.getActualTypeArguments()[0];
+        if (keyClass.equals(GenericData.Record.class))
+        {
+          _log.warn("Can't infer schema of GenericData.Record");
+        }
+        Schema schema = ReflectData.get().getSchema(keyClass);
+        AvroJob.setMapOutputKeySchema(job, schema);
+        _log.info(String.format("Infer map output value schema from %s class: %s",
+                                keyClass.getName(),
+                                schema.toString()));
       }
     }
     if (AvroValue.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputValueClass(getMapperClass())))
@@ -106,6 +121,17 @@ public abstract class AbstractAvroJob extends AbstractJob
       else
       {
         // Infer schema
+        ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(getMapperClass(), Mapper.class)[3];
+        Class<?> valueClass = (Class<?>) type.getActualTypeArguments()[0];
+        if (valueClass.equals(GenericData.Record.class))
+        {
+          _log.warn("Can't infer schema of GenericData.Record");
+        }
+        Schema schema = ReflectData.get().getSchema(valueClass);
+        AvroJob.setMapOutputValueSchema(job, schema);
+        _log.info(String.format("Infer map output value schema from %s class: %s",
+                                valueClass.getName(),
+                                schema.toString()));
       }
     }
   }

@@ -52,20 +52,6 @@ public class BasicConcatMultipleInputsJob extends AbstractJob
   public void setupOutputFormat(Job job) throws IOException
   {
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
-    job.setOutputKeyClass(IntWritable.class);
-    job.setOutputValueClass(Text.class);
-  }
-
-  @Override
-  protected Class<?> getMapOutputKeyClass()
-  {
-    return IntWritable.class;
-  }
-
-  @Override
-  protected Class<?> getMapOutputValueClass()
-  {
-    return Text.class;
   }
 
   @SuppressWarnings("rawtypes")

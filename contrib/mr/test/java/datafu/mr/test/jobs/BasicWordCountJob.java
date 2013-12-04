@@ -54,8 +54,6 @@ public class BasicWordCountJob extends AbstractJob
   public void setupOutputFormat(Job job) throws IOException
   {
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
   }
 
   @SuppressWarnings("rawtypes")
@@ -72,28 +70,15 @@ public class BasicWordCountJob extends AbstractJob
     return Reduce.class;
   }
 
-  @Override
-  protected Class<?> getMapOutputKeyClass()
-  {
-    return Text.class;
-  }
-
-  @Override
-  protected Class<?> getMapOutputValueClass()
-  {
-    return IntWritable.class;
-  }
-
   public static class Map extends Mapper<LongWritable, Text, Text, IntWritable>
   {
     private final static IntWritable one = new IntWritable(1);
-    private Text word = new Text();
+    private final Text word = new Text();
 
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException,
         InterruptedException
     {
-      System.out.println("MAPPER INPUT : " + key.toString() + " : " + value.toString());
       String line = value.toString();
       StringTokenizer tokenizer = new StringTokenizer(line);
       while (tokenizer.hasMoreTokens())
@@ -111,7 +96,6 @@ public class BasicWordCountJob extends AbstractJob
     public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException,
         InterruptedException
     {
-      System.out.println("REDUCER INPUT : " + key.toString());
       int sum = 0;
       for (IntWritable val : values)
       {

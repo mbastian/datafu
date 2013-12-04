@@ -51,18 +51,6 @@ public class BasicAvroIntermediateWritableJob extends AbstractAvroJob
   }
 
   @Override
-  protected Class<?> getMapOutputKeyClass()
-  {
-    return LongWritable.class;
-  }
-
-  @Override
-  protected Class<?> getMapOutputValueClass()
-  {
-    return LongWritable.class;
-  }
-
-  @Override
   protected Schema getReduceOutputSchema()
   {
     return OUTPUT_SCHEMA;
