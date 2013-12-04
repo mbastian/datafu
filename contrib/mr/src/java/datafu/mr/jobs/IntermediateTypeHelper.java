@@ -19,32 +19,26 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 
 public class IntermediateTypeHelper
 {
 
   @SuppressWarnings("rawtypes")
-  public static Type[] getMapperTypes(Class mapperClass)
+  public static Type[] getTypes(Class mapperOrReducerClass, Class<?> topLevelClass)
   {
-    if (!Mapper.class.isAssignableFrom(mapperClass))
+    if (!topLevelClass.isAssignableFrom(mapperOrReducerClass))
     {
-      throw new IllegalArgumentException("The input class should inherit from " + Mapper.class.getName());
+      throw new IllegalArgumentException("The input class should inherit from " + topLevelClass.getName());
     }
     Type[] types = null;
-    while (types == null && mapperClass != null)
+    while (types == null && mapperOrReducerClass != null)
     {
-      if (mapperClass.getSuperclass() != null && mapperClass.getSuperclass().equals(Mapper.class))
+      if (mapperOrReducerClass.getSuperclass() != null && mapperOrReducerClass.getSuperclass().equals(topLevelClass))
       {
-        types = ((ParameterizedType) mapperClass.getGenericSuperclass()).getActualTypeArguments();
-        for (int i = 0; i < types.length; i++)
-        {
-          if (types[i] instanceof ParameterizedType)
-          {
-            types[i] = ((ParameterizedType) types[i]).getRawType();
-          }
-        }
+        types = ((ParameterizedType) mapperOrReducerClass.getGenericSuperclass()).getActualTypeArguments();
       }
-      mapperClass = mapperClass.getSuperclass();
+      mapperOrReducerClass = mapperOrReducerClass.getSuperclass();
     }
     return types;
   }
@@ -52,12 +46,64 @@ public class IntermediateTypeHelper
   @SuppressWarnings("rawtypes")
   public static Class getMapperOutputKeyClass(Class mapperClass)
   {
-    return (Class) getMapperTypes(mapperClass)[2];
+    Type[] types = getTypes(mapperClass, Mapper.class);
+    if (types != null)
+    {
+      Type t = types[2];
+      if (t instanceof ParameterizedType)
+      {
+        return (Class) ((ParameterizedType) t).getRawType();
+      }
+      return (Class) t;
+    }
+    return null;
   }
 
   @SuppressWarnings("rawtypes")
   public static Class getMapperOutputValueClass(Class mapperClass)
   {
-    return (Class) getMapperTypes(mapperClass)[3];
+    Type[] types = getTypes(mapperClass, Mapper.class);
+    if (types != null)
+    {
+      Type t = types[3];
+      if (t instanceof ParameterizedType)
+      {
+        return (Class) ((ParameterizedType) t).getRawType();
+      }
+      return (Class) t;
+    }
+    return null;
+  }
+
+  @SuppressWarnings("rawtypes")
+  public static Class getReducerOutputKeyClass(Class reducerClass)
+  {
+    Type[] types = getTypes(reducerClass, Reducer.class);
+    if (types != null)
+    {
+      Type t = types[2];
+      if (t instanceof ParameterizedType)
+      {
+        return (Class) ((ParameterizedType) t).getRawType();
+      }
+      return (Class) t;
+    }
+    return null;
+  }
+
+  @SuppressWarnings("rawtypes")
+  public static Class getReducerOutputValueClass(Class reducerClass)
+  {
+    Type[] types = getTypes(reducerClass, Reducer.class);
+    if (types != null)
+    {
+      Type t = types[3];
+      if (t instanceof ParameterizedType)
+      {
+        return (Class) ((ParameterizedType) t).getRawType();
+      }
+      return (Class) t;
+    }
+    return null;
   }
 }

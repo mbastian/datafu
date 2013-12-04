@@ -39,13 +39,13 @@ public class TestIntermediateTypeHelper
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testNonMapperClass()
   {
-    IntermediateTypeHelper.getMapperTypes(Object.class);
+    IntermediateTypeHelper.getTypes(Object.class, Mapper.class);
   }
 
   @Test
   public void realMapperTest()
   {
-    Type[] types = IntermediateTypeHelper.getMapperTypes(RealMapper.class);
+    Type[] types = IntermediateTypeHelper.getTypes(RealMapper.class, Mapper.class);
     Assert.assertNotNull(types);
     Assert.assertEquals(types[0], IntWritable.class);
     Assert.assertEquals(types[1], LongWritable.class);
@@ -60,7 +60,7 @@ public class TestIntermediateTypeHelper
         new Mapper<IntWritable, LongWritable, Text, FloatWritable>()
         {
         };
-    Type[] types = IntermediateTypeHelper.getMapperTypes(anonmousMapper.getClass());
+    Type[] types = IntermediateTypeHelper.getTypes(anonmousMapper.getClass(), Mapper.class);
     Assert.assertNotNull(types);
     Assert.assertEquals(types[0], IntWritable.class);
     Assert.assertEquals(types[1], LongWritable.class);
@@ -71,7 +71,7 @@ public class TestIntermediateTypeHelper
   @Test
   public void parametizedMappertest()
   {
-    Type[] types = IntermediateTypeHelper.getMapperTypes(AvroMapper.class);
+    Type[] types = IntermediateTypeHelper.getTypes(AvroMapper.class, Mapper.class);
     Assert.assertNotNull(types);
     Assert.assertEquals(types[0], AvroKey.class);
     Assert.assertEquals(types[1], NullWritable.class);
