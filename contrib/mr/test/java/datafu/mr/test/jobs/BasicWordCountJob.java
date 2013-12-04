@@ -56,20 +56,6 @@ public class BasicWordCountJob extends AbstractJob
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
   }
 
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Mapper> getMapperClass()
-  {
-    return Map.class;
-  }
-
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Reducer> getReducerClass()
-  {
-    return Reduce.class;
-  }
-
   public static class Map extends Mapper<LongWritable, Text, Text, IntWritable>
   {
     private final static IntWritable one = new IntWritable(1);

@@ -85,10 +85,13 @@ public abstract class AbstractAvroJob extends AbstractJob
     // AvroJob.setInputKeySchema(job, inputSchema);
   }
 
+  @SuppressWarnings("rawtypes")
   @Override
   public void setupIntermediateFormat(Job job) throws IOException
   {
-    if (AvroKey.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputKeyClass(getMapperClass())))
+    Class<? extends Mapper> mapperClass = DiscoveryHelper.getMapperClass(this);
+
+    if (AvroKey.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputKeyClass(mapperClass)))
     {
       if (getMapOutputKeySchema() != null)
       {
@@ -98,7 +101,7 @@ public abstract class AbstractAvroJob extends AbstractJob
       else
       {
         // Infer schema
-        ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(getMapperClass(), Mapper.class)[2];
+        ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[2];
         Class<?> keyClass = (Class<?>) type.getActualTypeArguments()[0];
         if (keyClass.equals(GenericData.Record.class))
         {
@@ -111,7 +114,7 @@ public abstract class AbstractAvroJob extends AbstractJob
                                 schema.toString()));
       }
     }
-    if (AvroValue.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputValueClass(getMapperClass())))
+    if (AvroValue.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputValueClass(mapperClass)))
     {
       if (getMapOutputValueSchema() != null)
       {
@@ -121,7 +124,7 @@ public abstract class AbstractAvroJob extends AbstractJob
       else
       {
         // Infer schema
-        ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(getMapperClass(), Mapper.class)[3];
+        ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[3];
         Class<?> valueClass = (Class<?>) type.getActualTypeArguments()[0];
         if (valueClass.equals(GenericData.Record.class))
         {

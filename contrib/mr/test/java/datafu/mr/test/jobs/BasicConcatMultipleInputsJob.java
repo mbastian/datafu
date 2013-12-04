@@ -61,13 +61,6 @@ public class BasicConcatMultipleInputsJob extends AbstractJob
     return Mapper.class;
   }
 
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Reducer> getReducerClass()
-  {
-    return Reduce.class;
-  }
-
   public static class Reduce extends Reducer<IntWritable, Text, IntWritable, Text>
   {
 

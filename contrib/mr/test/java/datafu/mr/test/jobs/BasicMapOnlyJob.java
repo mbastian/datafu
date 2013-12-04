@@ -21,7 +21,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
@@ -59,13 +58,6 @@ public class BasicMapOnlyJob extends AbstractJob
   public Class<? extends Mapper> getMapperClass()
   {
     return MapInverse.class;
-  }
-
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Reducer> getReducerClass()
-  {
-    return null;
   }
 
   public static class MapInverse extends Mapper<LongWritable, Text, Text, LongWritable>

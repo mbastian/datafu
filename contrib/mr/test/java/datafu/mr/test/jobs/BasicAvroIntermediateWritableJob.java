@@ -56,20 +56,6 @@ public class BasicAvroIntermediateWritableJob extends AbstractAvroJob
     return OUTPUT_SCHEMA;
   }
 
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Mapper> getMapperClass()
-  {
-    return Map.class;
-  }
-
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Reducer> getReducerClass()
-  {
-    return Reduce.class;
-  }
-
   public static class Map extends Mapper<AvroKey<GenericRecord>, NullWritable, LongWritable, LongWritable>
   {
     private final LongWritable key;

@@ -64,13 +64,6 @@ public class BasicMultipleOutputsJob extends AbstractJob
     return Mapper.class;
   }
 
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Reducer> getReducerClass()
-  {
-    return MOReduce.class;
-  }
-
   public static class MOReduce extends Reducer<IntWritable, Text, IntWritable, Text>
   {
     private MultipleOutputs<IntWritable, Text> mos;

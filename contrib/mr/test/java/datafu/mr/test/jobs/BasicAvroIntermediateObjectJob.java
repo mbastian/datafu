@@ -25,7 +25,6 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapred.AvroValue;
-import org.apache.avro.reflect.ReflectData;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -50,20 +49,6 @@ public class BasicAvroIntermediateObjectJob extends AbstractAvroJob
   protected Schema getReduceOutputSchema()
   {
     return OUTPUT_SCHEMA;
-  }
-
-  @SuppressWarnings("rawtypes")
-  @Override
-  protected Class<? extends Mapper> getMapperClass()
-  {
-    return Map.class;
-  }
-
-  @SuppressWarnings("rawtypes")
-  @Override
-  protected Class<? extends Reducer> getReducerClass()
-  {
-    return Reduce.class;
   }
 
   public static class Map extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<User>, AvroValue<LoginEvent>>

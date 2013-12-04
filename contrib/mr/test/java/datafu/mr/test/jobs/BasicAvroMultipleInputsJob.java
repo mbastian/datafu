@@ -61,20 +61,6 @@ public class BasicAvroMultipleInputsJob extends AbstractAvroJob
     return OUTPUT_SCHEMA;
   }
 
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Mapper> getMapperClass()
-  {
-    return TheMapper.class;
-  }
-
-  @SuppressWarnings("rawtypes")
-  @Override
-  public Class<? extends Reducer> getReducerClass()
-  {
-    return TheReducer.class;
-  }
-
   public static class TheMapper extends
       Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, AvroValue<GenericRecord>>
   {

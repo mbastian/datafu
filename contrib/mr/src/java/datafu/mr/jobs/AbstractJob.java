@@ -508,7 +508,10 @@ public abstract class AbstractJob extends Configured
    * @return mapper class
    */
   @SuppressWarnings("rawtypes")
-  protected abstract Class<? extends Mapper> getMapperClass();
+  protected Class<? extends Mapper> getMapperClass()
+  {
+    return null;
+  }
 
   /**
    * Gets the reducer class
@@ -516,7 +519,10 @@ public abstract class AbstractJob extends Configured
    * @return reducer class
    */
   @SuppressWarnings("rawtypes")
-  protected abstract Class<? extends Reducer> getReducerClass();
+  protected Class<? extends Reducer> getReducerClass()
+  {
+    return null;
+  }
 
   /**
    * Gets the combiner class
@@ -609,6 +615,7 @@ public abstract class AbstractJob extends Configured
    * @throws InterruptedException
    * @throws ClassNotFoundException
    */
+  @SuppressWarnings("rawtypes")
   public void run() throws IOException,
       InterruptedException,
       ClassNotFoundException
@@ -664,11 +671,13 @@ public abstract class AbstractJob extends Configured
                                         outputPath.toString(),
                                         _log);
 
-    job.setMapperClass(getMapperClass());
+    Class<? extends Mapper> mapperClass = DiscoveryHelper.getMapperClass(this);
+    job.setMapperClass(mapperClass);
 
-    if (getReducerClass() != null)
+    Class<? extends Reducer> reducerClass = DiscoveryHelper.getReducerClass(this);
+    if (reducerClass != null)
     {
-      job.setReducerClass(getReducerClass());
+      job.setReducerClass(reducerClass);
 
       int numReducers;
       if (getNumReducers() != null)
@@ -706,7 +715,7 @@ public abstract class AbstractJob extends Configured
     }
     else
     {
-      Class<?> keyClass = IntermediateTypeHelper.getMapperOutputKeyClass(getMapperClass());
+      Class<?> keyClass = IntermediateTypeHelper.getMapperOutputKeyClass(mapperClass);
       if (keyClass != null)
       {
         job.setMapOutputKeyClass(keyClass);
@@ -724,7 +733,7 @@ public abstract class AbstractJob extends Configured
     }
     else
     {
-      Class<?> valueClass = IntermediateTypeHelper.getMapperOutputValueClass(getMapperClass());
+      Class<?> valueClass = IntermediateTypeHelper.getMapperOutputValueClass(mapperClass);
       if (valueClass != null)
       {
         job.setMapOutputValueClass(valueClass);
@@ -736,7 +745,7 @@ public abstract class AbstractJob extends Configured
       }
     }
 
-    if (getReducerClass() != null)
+    if (reducerClass != null)
     {
       if (getOutputKeyClass() != null)
       {
@@ -744,7 +753,7 @@ public abstract class AbstractJob extends Configured
       }
       else
       {
-        Class<?> keyClass = IntermediateTypeHelper.getReducerOutputKeyClass(getReducerClass());
+        Class<?> keyClass = IntermediateTypeHelper.getReducerOutputKeyClass(reducerClass);
         if (keyClass != null)
         {
           job.setOutputKeyClass(keyClass);
@@ -762,7 +771,7 @@ public abstract class AbstractJob extends Configured
       }
       else
       {
-        Class<?> valueClass = IntermediateTypeHelper.getReducerOutputValueClass(getReducerClass());
+        Class<?> valueClass = IntermediateTypeHelper.getReducerOutputValueClass(reducerClass);
         if (valueClass != null)
         {
           job.setOutputValueClass(valueClass);
