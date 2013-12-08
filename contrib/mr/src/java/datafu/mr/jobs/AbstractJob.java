@@ -278,6 +278,15 @@ public abstract class AbstractJob extends Configured
       setUseLatestExpansion(Boolean.parseBoolean((String) _props.get("use.latest.expansion")));
     }
   }
+  
+  /**
+   * Overridden to provide custom configuration after instanciation
+   * 
+   * @param conf
+   */
+  public void init(Configuration conf)
+  {
+  }
 
   /**
    * Overridden to provide custom configuration before the job starts.
@@ -620,7 +629,8 @@ public abstract class AbstractJob extends Configured
       InterruptedException,
       ClassNotFoundException
   {
-
+    init(getConf());
+    
     LatestExpansionFunction latestExpansionFunction = new LatestExpansionFunction(getFileSystem(), _log);
     List<String> inputPaths = new ArrayList<String>();
     for (Path p : getInputPaths())

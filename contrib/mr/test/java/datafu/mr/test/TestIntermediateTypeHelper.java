@@ -69,17 +69,6 @@ public class TestIntermediateTypeHelper
   }
 
   @Test
-  public void parametizedMappertest()
-  {
-    Type[] types = IntermediateTypeHelper.getTypes(AvroMapper.class, Mapper.class);
-    Assert.assertNotNull(types);
-    Assert.assertEquals(types[0], AvroKey.class);
-    Assert.assertEquals(types[1], NullWritable.class);
-    Assert.assertEquals(types[2], AvroKey.class);
-    Assert.assertEquals(types[3], AvroValue.class);
-  }
-
-  @Test
   public void realMapperOutputKeyClassTest()
   {
     Assert.assertEquals(IntermediateTypeHelper.getMapperOutputKeyClass(RealMapper.class), Text.class);
@@ -93,11 +82,5 @@ public class TestIntermediateTypeHelper
 
   private static class RealMapper extends Mapper<IntWritable, LongWritable, Text, FloatWritable>
   {
-  }
-
-  private static class AvroMapper extends
-      Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, AvroValue<GenericRecord>>
-  {
-
   }
 }

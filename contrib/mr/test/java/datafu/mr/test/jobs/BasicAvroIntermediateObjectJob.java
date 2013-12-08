@@ -32,6 +32,11 @@ import org.apache.hadoop.mapreduce.Reducer;
 import datafu.mr.avro.Schemas;
 import datafu.mr.jobs.AbstractAvroJob;
 
+/**
+ * Basic Avro MR job which uses Avro POJO reflection
+ * 
+ * @author Mathieu Bastian
+ */
 public class BasicAvroIntermediateObjectJob extends AbstractAvroJob
 {
   private static final Schema OUTPUT_SCHEMA;
