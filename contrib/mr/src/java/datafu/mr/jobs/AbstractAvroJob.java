@@ -28,11 +28,13 @@ import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import datafu.mr.avro.CombinedAvroKeyInputFormat;
+import datafu.mr.fs.PathUtils;
 
 public abstract class AbstractAvroJob extends AbstractJob
 {
@@ -166,5 +168,23 @@ public abstract class AbstractAvroJob extends AbstractJob
   public void setCombineInputs(boolean combineInputs)
   {
     _combineInputs = combineInputs;
+  }
+  
+  /**
+   * Returns the set of input schema, one schema per input path
+   * @return the set of input schema
+   */
+  protected Schema[] getInputSchemas() throws IOException {
+    Schema[] schemas = new Schema[getInputPaths().size()];
+    LatestExpansionFunction latestExpansionFunction = new LatestExpansionFunction(getFileSystem(), _log);
+    int i = 0;
+    for (Path p : getInputPaths())
+    {
+      p = new Path(isUseLatestExpansion() ? latestExpansionFunction.apply(p.toString()) : p.toString());
+      Schema schema = PathUtils.getSchemaFromPath(getFileSystem(), p);
+      _log.info(String.format("Got schema from path: %s\n%s", p.toString(), schema.toString()));
+      schemas[i++] = schema;
+    }
+    return schemas;
   }
 }
