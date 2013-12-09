@@ -44,12 +44,7 @@ public class BasicWordCountJob extends AbstractJob
   {
     job.setInputFormatClass(SequenceFileInputFormat.class);
   }
-
-  @Override
-  public void setupIntermediateFormat(Job job) throws IOException
-  {
-  }
-
+  
   @Override
   public void setupOutputFormat(Job job) throws IOException
   {

@@ -293,7 +293,7 @@ public abstract class AbstractJob extends Configured
    * 
    * @param conf
    */
-  public void config(Configuration conf)
+  public void configure(Job job)
   {
   }
 
@@ -506,8 +506,6 @@ public abstract class AbstractJob extends Configured
   }
 
   protected abstract void setupInputFormat(Job job) throws IOException;
-
-  protected abstract void setupIntermediateFormat(Job job) throws IOException;
 
   protected abstract void setupOutputFormat(Job job) throws IOException;
 
@@ -800,7 +798,6 @@ public abstract class AbstractJob extends Configured
     }
 
     setupInputFormat(job);
-    setupIntermediateFormat(job);
     setupOutputFormat(job);
 
     if (getGroupingComparator() != null)
@@ -813,7 +810,7 @@ public abstract class AbstractJob extends Configured
       job.setSortComparatorClass(getSortComparator());
     }
 
-    config(job.getConfiguration());
+    configure(job);
 
     if (!job.waitForCompletion(true))
     {

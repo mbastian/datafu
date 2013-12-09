@@ -81,15 +81,11 @@ public abstract class AbstractAvroJob extends AbstractJob
     {
       job.setInputFormatClass(AvroKeyInputFormat.class);
     }
-
-    // Schema inputSchema = PathUtils.getSchemaFromPath(getFileSystem(),
-    // getInputPaths().get(0));
-    // AvroJob.setInputKeySchema(job, inputSchema);
   }
 
   @SuppressWarnings("rawtypes")
   @Override
-  public void setupIntermediateFormat(Job job) throws IOException
+  public void configure(Job job) 
   {
     Class<? extends Mapper> mapperClass = DiscoveryHelper.getMapperClass(this);
 

@@ -46,11 +46,6 @@ public class BasicMultipleOutputsJob extends AbstractJob
   }
 
   @Override
-  public void setupIntermediateFormat(Job job) throws IOException
-  {
-  }
-
-  @Override
   public void setupOutputFormat(Job job) throws IOException
   {
     MultipleOutputs.addNamedOutput(job, "foo", SequenceFileOutputFormat.class, IntWritable.class, Text.class);
