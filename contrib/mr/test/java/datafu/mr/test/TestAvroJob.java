@@ -42,7 +42,10 @@ import datafu.mr.jobs.AbstractAvroJob;
 import datafu.mr.test.jobs.BasicAvroIntermediateObjectJob;
 import datafu.mr.test.jobs.BasicAvroIntermediateWritableJob;
 import datafu.mr.test.jobs.BasicAvroJob;
+import datafu.mr.test.jobs.BasicAvroMapOnlyJob;
+import datafu.mr.test.jobs.BasicAvroMapOnlyOutputObjectJob;
 import datafu.mr.test.jobs.BasicAvroMultipleInputsJob;
+import datafu.mr.test.jobs.BasicAvroOutputObjectJob;
 import datafu.mr.test.util.BasicAvroReader;
 import datafu.mr.test.util.BasicAvroWriter;
 
@@ -127,6 +130,16 @@ public class TestAvroJob extends TestBase
   }
 
   @Test
+  public void basicAvroJobOutputObjectTest() throws IOException,
+      InterruptedException,
+      ClassNotFoundException
+  {
+    initBasicJob();
+    configureAndRunJob(new BasicAvroOutputObjectJob(), "BasicAvroOutputObjectJob", _inputPath, _outputPath);
+    checkBasicJob();
+  }
+
+  @Test
   public void basicAvroJobIntermediateWritableTest() throws IOException,
       InterruptedException,
       ClassNotFoundException
@@ -140,7 +153,7 @@ public class TestAvroJob extends TestBase
   }
 
   @Test
-  public void basicAvroJMultipleInputsobTest() throws IOException,
+  public void basicAvroMultipleInputsJobTest() throws IOException,
       InterruptedException,
       ClassNotFoundException
   {
@@ -148,6 +161,29 @@ public class TestAvroJob extends TestBase
     initBasicMultipleInputsJob();
     configureAndRunJob(new BasicAvroMultipleInputsJob(), "BasicAvroMultipleInputsJob", multipleInput, _outputPath);
     checkBasicMultipleInputsJob();
+  }
+
+  @Test
+  public void basicAvroMapOnlyJob() throws IOException,
+      InterruptedException,
+      ClassNotFoundException
+  {
+    initBasicMapOnlyJob();
+    configureAndRunJob(new BasicAvroMapOnlyJob(), "BasicAvroMapOnlyJob", _inputPath, _outputPath);
+    checkBasicMapOnlyJob();
+  }
+
+  @Test
+  public void basicAvroMapOnlyOutputObjectJob() throws IOException,
+      InterruptedException,
+      ClassNotFoundException
+  {
+    initBasicMapOnlyJob();
+    configureAndRunJob(new BasicAvroMapOnlyOutputObjectJob(),
+                       "BasicAvroMapOnlyOutputObjectJob",
+                       _inputPath,
+                       _outputPath);
+    checkBasicMapOnlyJob();
   }
 
   // UTILITIES
@@ -201,6 +237,25 @@ public class TestAvroJob extends TestBase
     checkIdCount(counts, 3, 2);
     checkIdCount(counts, 4, 1);
     checkIdCount(counts, 5, 1);
+  }
+
+  private void initBasicMapOnlyJob() throws IOException
+  {
+    BasicAvroWriter writer = new BasicAvroWriter(_inputPath, EVENT_SCHEMA, getFileSystem());
+    writer.open();
+    storeIds(writer, 1, 2, 3);
+    writer.close();
+  }
+
+  private void checkBasicMapOnlyJob() throws IOException
+  {
+    checkOutputFolderCount(1);
+
+    HashMap<Long, Long> counts = loadOutputCounts();
+    checkSize(counts, 3);
+    checkIdCount(counts, 1, 1);
+    checkIdCount(counts, 2, 1);
+    checkIdCount(counts, 3, 1);
   }
 
   private void checkSize(HashMap<Long, Long> counts, int expectedSize)
