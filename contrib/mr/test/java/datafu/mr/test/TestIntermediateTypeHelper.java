@@ -18,19 +18,15 @@ package datafu.mr.test;
 
 import java.lang.reflect.Type;
 
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.mapred.AvroKey;
-import org.apache.avro.mapred.AvroValue;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import datafu.mr.jobs.IntermediateTypeHelper;
+import datafu.mr.util.IntermediateTypeHelper;
 
 @Test(groups = "pcl")
 public class TestIntermediateTypeHelper

@@ -29,7 +29,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import datafu.mr.jobs.LatestExpansionFunction;
+import datafu.mr.util.LatestExpansionFunction;
 
 @Test(groups = "pcl")
 public class TestLatestExpansionFunction extends TestBase

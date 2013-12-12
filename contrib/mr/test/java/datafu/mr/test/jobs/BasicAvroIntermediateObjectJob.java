@@ -51,7 +51,7 @@ public class BasicAvroIntermediateObjectJob extends AbstractAvroJob
   }
 
   @Override
-  protected Schema getReduceOutputSchema()
+  protected Schema getOutputSchema()
   {
     return OUTPUT_SCHEMA;
   }
@@ -75,12 +75,7 @@ public class BasicAvroIntermediateObjectJob extends AbstractAvroJob
   public static class Reduce extends
       Reducer<AvroKey<User>, AvroValue<LoginEvent>, AvroKey<GenericRecord>, NullWritable>
   {
-    private final GenericRecord output;
-
-    public Reduce()
-    {
-      output = new GenericData.Record(OUTPUT_SCHEMA);
-    }
+    private final GenericRecord output = new GenericData.Record(OUTPUT_SCHEMA);
 
     @Override
     protected void reduce(AvroKey<User> user, Iterable<AvroValue<LoginEvent>> values, Context context) throws IOException,

@@ -37,6 +37,11 @@ import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
+import datafu.mr.util.DiscoveryHelper;
+import datafu.mr.util.IntermediateTypeHelper;
+import datafu.mr.util.LatestExpansionFunction;
+import datafu.mr.util.ReduceEstimator;
+
 /**
  * Base class for Hadoop jobs.
  * 
@@ -278,7 +283,7 @@ public abstract class AbstractJob extends Configured
       setUseLatestExpansion(Boolean.parseBoolean((String) _props.get("use.latest.expansion")));
     }
   }
-  
+
   /**
    * Overridden to provide custom configuration after instanciation
    * 
@@ -515,7 +520,7 @@ public abstract class AbstractJob extends Configured
    * @return mapper class
    */
   @SuppressWarnings("rawtypes")
-  protected Class<? extends Mapper> getMapperClass()
+  public Class<? extends Mapper> getMapperClass()
   {
     return null;
   }
@@ -526,7 +531,7 @@ public abstract class AbstractJob extends Configured
    * @return reducer class
    */
   @SuppressWarnings("rawtypes")
-  protected Class<? extends Reducer> getReducerClass()
+  public Class<? extends Reducer> getReducerClass()
   {
     return null;
   }
@@ -537,7 +542,7 @@ public abstract class AbstractJob extends Configured
    * @return combiner class
    */
   @SuppressWarnings("rawtypes")
-  protected Class<? extends Reducer> getCombinerClass()
+  public Class<? extends Reducer> getCombinerClass()
   {
     return null;
   }
@@ -628,7 +633,7 @@ public abstract class AbstractJob extends Configured
       ClassNotFoundException
   {
     init(getConf());
-    
+
     LatestExpansionFunction latestExpansionFunction = new LatestExpansionFunction(getFileSystem(), _log);
     List<String> inputPaths = new ArrayList<String>();
     for (Path p : getInputPaths())

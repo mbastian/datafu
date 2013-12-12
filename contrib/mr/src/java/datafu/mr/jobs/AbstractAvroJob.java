@@ -17,6 +17,8 @@ package datafu.mr.jobs;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.avro.Schema;
@@ -31,10 +33,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
 import datafu.mr.avro.CombinedAvroKeyInputFormat;
 import datafu.mr.fs.PathUtils;
+import datafu.mr.util.DiscoveryHelper;
+import datafu.mr.util.IntermediateTypeHelper;
+import datafu.mr.util.LatestExpansionFunction;
 
 public abstract class AbstractAvroJob extends AbstractJob
 {
@@ -58,7 +64,10 @@ public abstract class AbstractAvroJob extends AbstractJob
     }
   }
 
-  protected abstract Schema getReduceOutputSchema();
+  protected Schema getOutputSchema()
+  {
+    return null;
+  }
 
   protected Schema getMapOutputKeySchema()
   {
@@ -85,64 +94,105 @@ public abstract class AbstractAvroJob extends AbstractJob
 
   @SuppressWarnings("rawtypes")
   @Override
-  public void configure(Job job) 
+  public void configure(Job job)
   {
     Class<? extends Mapper> mapperClass = DiscoveryHelper.getMapperClass(this);
+    Class<? extends Reducer> reducerClass = DiscoveryHelper.getReducerClass(this);
 
-    if (AvroKey.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputKeyClass(mapperClass)))
+    if (reducerClass != null)
     {
-      if (getMapOutputKeySchema() != null)
+      if (AvroKey.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputKeyClass(mapperClass)))
       {
-        AvroJob.setMapOutputKeySchema(job, getMapOutputKeySchema());
-        _log.info(String.format("Set map output key schema: %s", getMapOutputKeySchema().toString()));
-      }
-      else
-      {
-        // Infer schema
-        ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[2];
-        Class<?> keyClass = (Class<?>) type.getActualTypeArguments()[0];
-        if (keyClass.equals(GenericData.Record.class))
+        if (getMapOutputKeySchema() != null)
         {
-          _log.warn("Can't infer schema of GenericData.Record");
+          AvroJob.setMapOutputKeySchema(job, getMapOutputKeySchema());
+          _log.info(String.format("Set map output key schema: %s", getMapOutputKeySchema().toString()));
         }
-        Schema schema = ReflectData.get().getSchema(keyClass);
-        AvroJob.setMapOutputKeySchema(job, schema);
-        _log.info(String.format("Infer map output value schema from %s class: %s",
-                                keyClass.getName(),
-                                schema.toString()));
-      }
-    }
-    if (AvroValue.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputValueClass(mapperClass)))
-    {
-      if (getMapOutputValueSchema() != null)
-      {
-        AvroJob.setMapOutputValueSchema(job, getMapOutputValueSchema());
-        _log.info(String.format("Set map output value schema: %s", getMapOutputValueSchema().toString()));
-      }
-      else
-      {
-        // Infer schema
-        ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[3];
-        Class<?> valueClass = (Class<?>) type.getActualTypeArguments()[0];
-        if (valueClass.equals(GenericData.Record.class))
+        else
         {
-          _log.warn("Can't infer schema of GenericData.Record");
+          // Infer schema
+          ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[2];
+          Class<?> keyClass = (Class<?>) type.getActualTypeArguments()[0];
+          if (keyClass.equals(GenericData.Record.class))
+          {
+            _log.warn("Can't infer schema of GenericData.Record");
+          }
+          else
+          {
+            Schema schema = ReflectData.get().getSchema(keyClass);
+            AvroJob.setMapOutputKeySchema(job, schema);
+            _log.info(String.format("Infer map output value schema from %s class: %s",
+                                    keyClass.getName(),
+                                    schema.toString()));
+          }
         }
-        Schema schema = ReflectData.get().getSchema(valueClass);
-        AvroJob.setMapOutputValueSchema(job, schema);
-        _log.info(String.format("Infer map output value schema from %s class: %s",
-                                valueClass.getName(),
-                                schema.toString()));
+      }
+      if (AvroValue.class.isAssignableFrom(IntermediateTypeHelper.getMapperOutputValueClass(mapperClass)))
+      {
+        if (getMapOutputValueSchema() != null)
+        {
+          AvroJob.setMapOutputValueSchema(job, getMapOutputValueSchema());
+          _log.info(String.format("Set map output value schema: %s", getMapOutputValueSchema().toString()));
+        }
+        else
+        {
+          // Infer schema
+          ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[3];
+          Class<?> valueClass = (Class<?>) type.getActualTypeArguments()[0];
+          if (valueClass.equals(GenericData.Record.class))
+          {
+            _log.warn("Can't infer schema of GenericData.Record");
+          }
+          else
+          {
+            Schema schema = ReflectData.get().getSchema(valueClass);
+            AvroJob.setMapOutputValueSchema(job, schema);
+            _log.info(String.format("Infer map output value schema from %s class: %s",
+                                    valueClass.getName(),
+                                    schema.toString()));
+          }
+        }
       }
     }
   }
 
+  @SuppressWarnings("rawtypes")
   @Override
   public void setupOutputFormat(Job job) throws IOException
   {
     job.setOutputFormatClass(AvroKeyOutputFormat.class);
-    AvroJob.setOutputKeySchema(job, getReduceOutputSchema());
-    _log.info(String.format("Set output key schema: %s", getReduceOutputSchema().toString()));
+    Schema outputSchema = getOutputSchema();
+    if (outputSchema != null)
+    {
+      AvroJob.setOutputKeySchema(job, getOutputSchema());
+      _log.info(String.format("Set output key schema: %s", getOutputSchema().toString()));
+    }
+    else
+    {
+      // Infer schema
+      ParameterizedType type = null;
+      Class<? extends Reducer> reducerClass = DiscoveryHelper.getReducerClass(this);
+      if (reducerClass == null)
+      {
+        Class<? extends Mapper> mapperClass = DiscoveryHelper.getMapperClass(this);
+        type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[2];
+      }
+      else
+      {
+        type = (ParameterizedType) IntermediateTypeHelper.getTypes(reducerClass, Reducer.class)[2];
+      }
+      Class<?> keyClass = (Class<?>) type.getActualTypeArguments()[0];
+      if (keyClass.equals(GenericData.Record.class))
+      {
+        _log.warn("Can't infer schema of GenericData.Record");
+      }
+      else
+      {
+        Schema schema = ReflectData.get().getSchema(keyClass);
+        AvroJob.setOutputKeySchema(job, schema);
+        _log.info(String.format("Infer output key schema from %s class: %s", keyClass.getName(), schema.toString()));
+      }
+    }
   }
 
   /**
@@ -165,21 +215,23 @@ public abstract class AbstractAvroJob extends AbstractJob
   {
     _combineInputs = combineInputs;
   }
-  
+
   /**
    * Returns the set of input schema, one schema per input path
+   * 
    * @return the set of input schema
    */
-  protected Schema[] getInputSchemas() throws IOException {
-    Schema[] schemas = new Schema[getInputPaths().size()];
+  protected Map<String, Schema> getInputSchemas() throws IOException
+  {
+    Map<String, Schema> schemas = new LinkedHashMap<String, Schema>();
     LatestExpansionFunction latestExpansionFunction = new LatestExpansionFunction(getFileSystem(), _log);
-    int i = 0;
     for (Path p : getInputPaths())
     {
       p = new Path(isUseLatestExpansion() ? latestExpansionFunction.apply(p.toString()) : p.toString());
       Schema schema = PathUtils.getSchemaFromPath(getFileSystem(), p);
-      _log.info(String.format("Got schema from path: %s\n%s", p.toString(), schema.toString()));
-      schemas[i++] = schema;
+      String pathName = p.getName();
+      _log.info(String.format("Got schema from path: %s\n%s", pathName, schema.toString()));
+      schemas.put(pathName, schema);
     }
     return schemas;
   }
