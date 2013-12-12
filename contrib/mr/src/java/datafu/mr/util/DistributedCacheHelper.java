@@ -14,7 +14,7 @@
  * the License.
  */
 
-package datafu.mr.jobs;
+package datafu.mr.util;
 
 import java.io.File;
 import java.io.FileInputStream;

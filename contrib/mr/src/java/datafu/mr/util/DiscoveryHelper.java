@@ -13,11 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package datafu.mr.jobs;
+package datafu.mr.util;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
+
+import datafu.mr.jobs.AbstractJob;
 
 public class DiscoveryHelper
 {
@@ -52,7 +58,17 @@ public class DiscoveryHelper
     }
     else
     {
-      Class<? extends Reducer> c = getNestedClass(job.getClass(), Reducer.class);
+      Class<? extends Reducer> c = null;
+      if (job.getCombinerClass() != null)
+      {
+        List<Class<? extends Reducer>> ignoreList = new ArrayList<Class<? extends Reducer>>();
+        ignoreList.add(job.getCombinerClass());
+        c = getNestedClass(job.getClass(), Reducer.class, ignoreList);
+      }
+      else
+      {
+        c = getNestedClass(job.getClass(), Reducer.class);
+      }
       if (c != null)
       {
         _log.info(String.format("Discovered reducer class %s from %s", c.getName(), job.getClass().getName()));
@@ -62,12 +78,21 @@ public class DiscoveryHelper
     }
   }
 
-  @SuppressWarnings("unchecked")
   private static <T> Class<? extends T> getNestedClass(Class<?> c, Class<T> match)
+  {
+    return getNestedClass(c, match, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> Class<? extends T> getNestedClass(Class<?> c, Class<T> match, Collection<Class<? extends T>> ignore)
   {
     Class<? extends T> res = null;
     for (Class<?> cls : c.getDeclaredClasses())
     {
+      if (ignore != null && ignore.contains(cls))
+      {
+        continue;
+      }
       if (match.isAssignableFrom(cls))
       {
         if (res != null)
