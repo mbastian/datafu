@@ -51,7 +51,8 @@ public class AvroJoin extends AbstractAvroJob
     MISSING_SCHEMA.setFields(Arrays.asList(new Field[] { new Field("missing", Schema.create(Type.BOOLEAN), null, null) }));
   }
   private static final GenericData.Record MISSING_FLAG = new GenericData.Record(MISSING_SCHEMA);
-  static {
+  static
+  {
     MISSING_FLAG.put(0, true);
   }
   private static String CONF_KEYS = "avrojoin.keys";
