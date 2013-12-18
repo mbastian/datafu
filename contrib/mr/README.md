@@ -77,7 +77,7 @@ public class WordCountJob extends AbstractJob
 
 Override the `AbstractJob` or `AbstractAvroJob` and define a mapper and reducer class. 
 
-Alsom checkout the examples in the `/test/java` folder.
+Also, checkout the examples in the `/test/java` folder.
 
 #### How to configure and run a job?
 
