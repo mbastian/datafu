@@ -33,7 +33,7 @@ public class DiscoveryHelper
   @SuppressWarnings("rawtypes")
   public static Class<? extends Mapper> getMapperClass(AbstractJob job)
   {
-    if (job.getMapperClass() != null)
+    if (hasConfiguredMapperClass(job))
     {
       return job.getMapperClass();
     }
@@ -52,7 +52,7 @@ public class DiscoveryHelper
   @SuppressWarnings("rawtypes")
   public static Class<? extends Reducer> getReducerClass(AbstractJob job)
   {
-    if (job.getReducerClass() != null)
+    if (hasConfiguredReducerClass(job))
     {
       return job.getReducerClass();
     }
@@ -104,5 +104,27 @@ public class DiscoveryHelper
       }
     }
     return res;
+  }
+  
+  private static boolean hasConfiguredReducerClass(AbstractJob job) {
+    try
+    {
+      return !job.getClass().getMethod("getReducerClass").getDeclaringClass().equals(AbstractJob.class);
+    }
+    catch (Exception e)
+    {
+     throw new RuntimeException(e);
+    }
+  }
+  
+  private static boolean hasConfiguredMapperClass(AbstractJob job) {
+    try
+    {
+      return !job.getClass().getMethod("getMapperClass").getDeclaringClass().equals(AbstractJob.class);
+    }
+    catch (Exception e)
+    {
+     throw new RuntimeException(e);
+    }
   }
 }
