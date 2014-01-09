@@ -54,7 +54,7 @@ public abstract class AbstractAvroJob extends AbstractJob
     setConf(new Configuration());
   }
 
-  public AbstractAvroJob(String name, Properties props) throws IOException
+  public AbstractAvroJob(String name, Properties props)
   {
     super(name, props);
 
