@@ -153,10 +153,10 @@ public class TestAvroJoin extends TestBase
   {
     BasicAvroReader reader = new BasicAvroReader(_outputPath, getFileSystem());
     reader.open();
-    List<GenericRecord> results = reader.readAll();
+    List<Object> results = reader.readAll();
     reader.close();
     Assert.assertEquals(results.size(), 1);
-    GenericRecord record = results.get(0);
+    GenericRecord record = (GenericRecord) results.get(0);
     Assert.assertEquals(record.get("key").toString(), "mykey");
     Assert.assertEquals(record.get("value_a").toString(), "foo");
     Assert.assertEquals(record.get("value_b").toString(), "bar");
@@ -166,14 +166,14 @@ public class TestAvroJoin extends TestBase
   {
     BasicAvroReader reader = new BasicAvroReader(_outputPath, getFileSystem());
     reader.open();
-    List<GenericRecord> results = reader.readAll();
+    List<Object> results = reader.readAll();
     reader.close();
     Assert.assertEquals(results.size(), 2);
-    GenericRecord record = results.get(0);
+    GenericRecord record = (GenericRecord) results.get(0);
     Assert.assertEquals(record.get("key").toString(), "mykey");
     Assert.assertEquals(record.get("value_a").toString(), "foo");
     Assert.assertEquals(record.get("value_b").toString(), "bar");
-    GenericRecord record2 = results.get(1);
+    GenericRecord record2 = (GenericRecord) results.get(1);
     Assert.assertEquals(record2.get("key").toString(), "mykey2");
     Assert.assertEquals(record2.get("value_a").toString(), "foo");
     Assert.assertNull(record2.get("value_b"));
