@@ -46,6 +46,7 @@ import datafu.mr.test.jobs.BasicAvroMapOnlyJob;
 import datafu.mr.test.jobs.BasicAvroMapOnlyOutputObjectJob;
 import datafu.mr.test.jobs.BasicAvroMultipleInputsJob;
 import datafu.mr.test.jobs.BasicAvroOutputObjectJob;
+import datafu.mr.test.jobs.BasicAvroWordCountJob;
 import datafu.mr.test.util.BasicAvroReader;
 import datafu.mr.test.util.BasicAvroWriter;
 
@@ -186,6 +187,16 @@ public class TestAvroJob extends TestBase
     checkBasicMapOnlyJob();
   }
 
+  @Test
+  public void basicAvroWordCountJob() throws IOException,
+      InterruptedException,
+      ClassNotFoundException
+  {
+    initPrimitiveJob();
+    configureAndRunJob(new BasicAvroWordCountJob(), "BasicAvroWordCountJob", _inputPath, _outputPath);
+    checkWordCountJob();
+  }
+
   // UTILITIES
 
   private void initBasicJob() throws IOException
@@ -258,7 +269,26 @@ public class TestAvroJob extends TestBase
     checkIdCount(counts, 3, 1);
   }
 
-  private void checkSize(HashMap<Long, Long> counts, int expectedSize)
+  private void initPrimitiveJob() throws IOException
+  {
+    BasicAvroWriter writer = new BasicAvroWriter(_inputPath, Schema.create(Type.STRING), getFileSystem());
+    writer.open();
+    writer.append("foo bar");
+    writer.append("foo");
+    writer.close();
+  }
+
+  private void checkWordCountJob() throws IOException
+  {
+    checkOutputFolderCount(1);
+
+    HashMap<String, Integer> counts = loadOutputWordCounts();
+    checkSize(counts, 2);
+    checkWordCount(counts, "foo", 2);
+    checkWordCount(counts, "bar", 1);
+  }
+
+  private void checkSize(HashMap<?, ?> counts, int expectedSize)
   {
     Assert.assertEquals(counts.size(), expectedSize);
   }
@@ -267,6 +297,12 @@ public class TestAvroJob extends TestBase
   {
     Assert.assertTrue(counts.containsKey(id));
     Assert.assertEquals(counts.get(id).longValue(), count);
+  }
+
+  private void checkWordCount(HashMap<String, Integer> counts, String id, int count)
+  {
+    Assert.assertTrue(counts.containsKey(id));
+    Assert.assertEquals(counts.get(id).intValue(), count);
   }
 
   private void checkOutputFolderCount(int expectedCount) throws IOException
@@ -329,12 +365,31 @@ public class TestAvroJob extends TestBase
 
     BasicAvroReader reader = new BasicAvroReader(_outputPath, getFileSystem());
     reader.open();
-    for (GenericRecord r : reader.readAll())
+    for (Object o : reader.readAll())
     {
+      GenericRecord r = (GenericRecord) o;
       Long memberId = (Long) r.get("key");
       Long count = (Long) r.get("count");
       Assert.assertFalse(counts.containsKey(memberId));
       counts.put(memberId, count);
+    }
+    reader.close();
+    return counts;
+  }
+
+  private HashMap<String, Integer> loadOutputWordCounts() throws IOException
+  {
+    HashMap<String, Integer> counts = new HashMap<String, Integer>();
+
+    BasicAvroReader reader = new BasicAvroReader(_outputPath, getFileSystem());
+    reader.open();
+    for (Object o : reader.readAll())
+    {
+      GenericRecord r = (GenericRecord) o;
+      String word = ((CharSequence) r.get("word")).toString();
+      Integer count = (Integer) r.get("count");
+      Assert.assertFalse(counts.containsKey(word));
+      counts.put(word, count);
     }
     reader.close();
     return counts;
