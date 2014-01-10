@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericDatumWriter;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -32,7 +31,7 @@ public class BasicAvroWriter
   private final Schema _schema;
   private final FileSystem _fs;
 
-  private DataFileWriter<GenericRecord> _dataWriter;
+  private DataFileWriter<Object> _dataWriter;
   private OutputStream _outputStream;
 
   public BasicAvroWriter(Path outputPath, Schema schema, FileSystem fs)
@@ -53,12 +52,12 @@ public class BasicAvroWriter
 
     _outputStream = _fs.create(new Path(path, "part-00000.avro"));
 
-    GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<GenericRecord>();
-    _dataWriter = new DataFileWriter<GenericRecord>(writer);
+    GenericDatumWriter<Object> writer = new GenericDatumWriter<Object>();
+    _dataWriter = new DataFileWriter<Object>(writer);
     _dataWriter.create(_schema, _outputStream);
   }
 
-  public void append(GenericRecord record) throws IOException
+  public void append(Object record) throws IOException
   {
     if (_dataWriter == null)
     {

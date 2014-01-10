@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.apache.avro.file.DataFileStream;
 import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumReader;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -33,7 +32,7 @@ public class BasicAvroReader
   private final Path _inputPath;
   private final FileSystem _fs;
 
-  private DataFileStream<GenericRecord> _dataReader;
+  private DataFileStream<Object> _dataReader;
 
   public BasicAvroReader(Path inputPath, FileSystem fs)
   {
@@ -56,16 +55,16 @@ public class BasicAvroReader
     }
 
     FSDataInputStream is = _fs.open(path);
-    DatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>();
-    _dataReader = new DataFileStream<GenericRecord>(is, reader);
+    DatumReader<Object> reader = new GenericDatumReader<Object>();
+    _dataReader = new DataFileStream<Object>(is, reader);
   }
 
-  public List<GenericRecord> readAll() throws IOException
+  public List<Object> readAll() throws IOException
   {
-    List<GenericRecord> res = new ArrayList<GenericRecord>();
+    List<Object> res = new ArrayList<Object>();
     while (_dataReader.hasNext())
     {
-      GenericRecord r = _dataReader.next();
+      Object r = _dataReader.next();
       res.add(r);
     }
     return res;
