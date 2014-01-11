@@ -21,8 +21,21 @@ import java.util.Arrays;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 
+/**
+ * Avro schema utilities
+ * 
+ * @author Mathieu Bastian
+ */
 public class Schemas
 {
+  /**
+   * Creates a record schema with name and package derived from a class and with the provided fields
+   * 
+   * @param cls
+   * @param name
+   * @param fields
+   * @return
+   */
   public static Schema createRecordSchema(@SuppressWarnings("rawtypes") Class cls, String name, Field... fields)
   {
     Schema record = Schema.createRecord(cls.getName() + name, null, cls.getPackage().getName(), false);

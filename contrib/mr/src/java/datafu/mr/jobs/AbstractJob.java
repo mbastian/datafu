@@ -98,7 +98,7 @@ import datafu.mr.util.ReduceEstimator;
  * <em>hadoop-conf.mapred.min.split.size</em> to the desired value.
  * </p>
  * 
- * @author "Matthew Hayes"
+ * @author "Mathieu Bastian"
  * 
  */
 public abstract class AbstractJob extends Configured

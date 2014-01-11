@@ -26,6 +26,11 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import datafu.mr.jobs.AbstractAvroJob;
 
+/**
+ * Basic Avro MR job which outputs a Java POJO object
+ * 
+ * @author Mathieu Bastian
+ */
 public class BasicAvroOutputObjectJob extends AbstractAvroJob
 {
 

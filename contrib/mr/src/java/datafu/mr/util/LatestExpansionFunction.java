@@ -26,6 +26,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
+/**
+ * Utility to obtain the latest path from a folder
+ * 
+ * @author "Matthew Hayes"
+ */
 public class LatestExpansionFunction
 {
   private final Logger log;

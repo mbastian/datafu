@@ -25,6 +25,11 @@ import org.apache.log4j.Logger;
 
 import datafu.mr.jobs.AbstractJob;
 
+/**
+ * Utility to discover Mapper and Reducer implementation in classes
+ * 
+ * @author "Mathieu Bastian"
+ */
 public class DiscoveryHelper
 {
 

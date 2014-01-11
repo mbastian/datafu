@@ -21,6 +21,11 @@ import java.lang.reflect.Type;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 
+/**
+ * Utility to get the generic types configured by the Mapper and Reducer implementation
+ * 
+ * @author "Mathieu Bastian"
+ */
 public class IntermediateTypeHelper
 {
 
