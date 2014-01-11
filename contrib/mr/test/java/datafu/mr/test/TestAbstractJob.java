@@ -34,6 +34,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import datafu.mr.jobs.AbstractJob;
+import datafu.mr.test.jobs.BasicAvroWordCountOverrideFormatJob;
 import datafu.mr.test.jobs.BasicConcatMultipleInputsJob;
 import datafu.mr.test.jobs.BasicDistributedCacheJob;
 import datafu.mr.test.jobs.BasicMapOnlyJob;
@@ -137,6 +138,16 @@ public class TestAbstractJob extends TestBase
     writeMultipleOutputsInput();
     configureAndRunJob(new BasicMultipleOutputsJob(), "BasicMultipleOutputsJob", _inputPath, _outputPath);
     checkMultipleOutputs();
+  }
+  
+  @Test
+  public void testBasicAvroWordCountOverrideFormatJob() throws IOException,
+      InterruptedException,
+      ClassNotFoundException
+  {
+    writeWordCountInput();
+    configureAndRunJob(new BasicAvroWordCountOverrideFormatJob(), "BasicAvroWordCountOverrideFormatJob", _inputPath, _outputPath);
+    checkWordCountOutput();
   }
 
   // UTILITIES
