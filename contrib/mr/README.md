@@ -262,3 +262,7 @@ Yes, one can always call the `getInputPaths()` method. In the case of an Avro jo
 ## Design notes
 
 The framework is based on the new Hadoop MapReduce API (org.apache.hadoop.mapreduce). It's a thin layer on top of the Hadoop API yet it simplifies key concepts and reduce the amount of boilerplate and configuration code. 
+
+## Contribute
+
+The source code is available under the Apache 2.0 license. Contributions are welcome.
