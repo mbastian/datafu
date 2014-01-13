@@ -4,7 +4,7 @@ DataFu MR is a lightweight framework for implementing Java MapReduce Hadoop jobs
 
 ## Quick Start Example
 
-The way to use DataFu MR is simply to subclass `AbstractJob` or `AbstractAvroJob` and implement/override the methods. 
+The way to use DataFu MR is simply to subclass its `AbstractJob` or `AbstractAvroJob` and implement/override the methods. 
 
 Basic Word Count example:
 
@@ -56,6 +56,66 @@ public class WordCountJob extends AbstractJob
         sum += val.get();
       }
       context.write(key, new IntWritable(sum));
+    }
+  }
+}
+```
+
+Same word count example, but using `AbstractAvroJob`:
+
+```
+public class AvroWordCountJob extends AbstractAvroJob
+{
+
+  public static final Schema OUTPUT_SCHEMA = Schemas.createRecordSchema(AvroWordCountJob.class,
+                                                                        "Output",
+                                                                        new Field("word",
+                                                                                  Schema.create(Type.STRING),
+                                                                                  "word",
+                                                                                  null),
+                                                                        new Field("count",
+                                                                                  Schema.create(Type.INT),
+                                                                                  "count",
+                                                                                  null));
+
+  @Override
+  public Schema getOutputSchema()
+  {
+    return OUTPUT_SCHEMA;
+  }
+
+  public static class Map extends Mapper<AvroKey<String>, NullWritable, AvroKey<String>, AvroValue<Integer>>
+  {
+    @Override
+    public void map(AvroKey<String> record, NullWritable nullValue, Context context) throws IOException,
+        InterruptedException
+    {
+      String line = record.datum().toString();
+      StringTokenizer tokenizer = new StringTokenizer(line);
+      while (tokenizer.hasMoreTokens())
+      {
+        context.write(new AvroKey<String>(tokenizer.nextToken()), new AvroValue<Integer>(1));
+      }
+    }
+  }
+
+  public static class Reduce extends Reducer<AvroKey<String>, AvroValue<Integer>, AvroKey<GenericRecord>, NullWritable>
+  {
+
+    @Override
+    public void reduce(AvroKey<String> key, Iterable<AvroValue<Integer>> values, Context context) throws IOException,
+        InterruptedException
+    {
+      int sum = 0;
+      for (AvroValue<Integer> val : values)
+      {
+        sum += val.datum();
+      }
+      GenericData.Record result = new GenericData.Record(OUTPUT_SCHEMA);
+      result.put("word", key.datum());
+      result.put("count", sum);
+
+      context.write(new AvroKey<GenericRecord>(result), NullWritable.get());
     }
   }
 }
@@ -145,6 +205,42 @@ public void setupOutputFormat(Job job) throws IOException
 ```
 
 Then, use the `MultipleOutputs.write()` method to configure which file output to write to.
+
+##### How to use a custom input or output formats?
+
+In the case of an job extending `AbstractJob`, the `setupInputFormat()` and `setupOutputFormat()` methods have to be implemented so it's up to you which format to use. In the case of an `AbstractAvroJob`, the default input and output format are Avro but can be overridden. For instance, to use Avro as input but customize the output format simply override the `setupOutputFormat()` method.
+
+##### How are the mapper and reducer classes configured?
+
+If the job class contains a mapper and reducer inner classes these are automatically set as mapper and reducer for the job. This can always be set by implementing the `getMapperClass()` and `getReducerClass()` methods. The automatic setup doesn't work if the class contains multiple inner classes extending `Mapper` or `Reducer`.
+
+If you wish to use the `Mapper.class` as mapper, make sure to implement the `getMapperClass()`.
+
+##### How to use a combiner?
+
+Override the `getCombinerClass()` method.
+
+##### How to use a partitioner?
+
+Override the `getPartitionerClass()` method.
+
+##### How to use a grouping comparator?
+
+Override the `getGroupingComparator()` method.
+
+##### How to use a sort comparator?
+
+Override the `getSortComparator()` method.
+
+##### How to provide the Avro output schema?
+
+Override the `getOutputSchema()` method. If the output is a Java primitive or a POJO object, the schema will be automatically inferred do it's not necessary to implement this method.
+
+In the case of a map-only job, implement the `getOutputSchema()` to define the mapper output schema.
+
+#### Can an Avro job uses Writable as intermediate types?
+
+Yes, that is supported. Take a look at the `BasicAvroIntermediateWritableJob` job test example.
 
 ## Design notes
 
