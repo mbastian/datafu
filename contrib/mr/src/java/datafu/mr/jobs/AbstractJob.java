@@ -278,10 +278,12 @@ public abstract class AbstractJob extends Configured
         throw new RuntimeException("Could not extract input paths from: " + _props.get("mapred.cache.files"));
       }
     }
-    if (_props.get("expand.path") != null)
+    if (_props.get("use.latest.expansion") != null)
     {
-      setUseLatestExpansion(Boolean.parseBoolean((String) _props.get("use.latest.expansion")));
+      boolean useLatest = Boolean.parseBoolean((String) _props.get("use.latest.expansion"));
+      setUseLatestExpansion(useLatest);
     }
+    _log.info(String.format("Using latest expansion: %s", _useLatestExpansion));
   }
 
   /**
@@ -638,7 +640,9 @@ public abstract class AbstractJob extends Configured
     List<String> inputPaths = new ArrayList<String>();
     for (Path p : getInputPaths())
     {
-      inputPaths.add(_useLatestExpansion ? latestExpansionFunction.apply(p.toString()) : p.toString());
+      String ip = _useLatestExpansion ? latestExpansionFunction.apply(p.toString()) : p.toString();
+      inputPaths.add(ip);
+      _log.info(String.format("Adding %s to the input paths", ip));
     }
 
     Path outputPath = getOutputPath();
