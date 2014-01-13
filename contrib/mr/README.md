@@ -171,6 +171,10 @@ Setup the `input.path` parameter. For multiple inputs, separate the paths with a
 
 Setup the `output.path` parameter. If the path exists, it will be deleted and replaced with the ouptut.
 
+##### How to configure the temporary location?
+
+Setup the `temp.path` parameter. The default is `/tmp/`.
+
 ##### How to use the distributed cache?
 
 Override the `getDistributedCachePaths` method. It is recommend that you use the [symlink](http://hadoop.apache.org/docs/r1.2.1/api/org/apache/hadoop/filecache/DistributedCache.html) feature as it simplifies the way to read the files. 
@@ -205,6 +209,10 @@ public void setupOutputFormat(Job job) throws IOException
 ```
 
 Then, use the `MultipleOutputs.write()` method to configure which file output to write to.
+
+##### What is the #LATEST suffix for?
+
+If an input path ends with #LATEST (e.g. `/data/events/#LATEST`), the system will browse the folder and pick the first folder by lexicographic order. For instance, if `/data/events` contains two folders `/data/events/2013-01-01` and `/data/events/2014-01-01` it will replace `#LATEST` by `2014-01-01`.
 
 ##### How to use a custom input or output formats?
 
@@ -241,6 +249,15 @@ In the case of a map-only job, implement the `getOutputSchema()` to define the m
 ##### Can an Avro job use Writable as intermediate types?
 
 Yes, that is supported. Take a look at the `BasicAvroIntermediateWritableJob` job test example.
+
+##### Can an Avro job output a Java POJO object?
+
+Yes, this is supported both as an ouput of the mapper and the reducer. In most cases, you don't have to provide a schema as the system will automatically infer the schema by introspection into the class.
+
+
+##### Are the input files accessible in the `init()` method?
+
+Yes, one can always call the `getInputPaths()` method. In the case of an Avro job, one can also call `getInputSchemas()` to obtain the schema of each input path.
 
 ## Design notes
 
