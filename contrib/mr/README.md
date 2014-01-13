@@ -63,7 +63,7 @@ public class WordCountJob extends AbstractJob
 
 Same word count example, but using `AbstractAvroJob`:
 
-```
+```java
 public class AvroWordCountJob extends AbstractAvroJob
 {
 
@@ -238,7 +238,7 @@ Override the `getOutputSchema()` method. If the output is a Java primitive or a 
 
 In the case of a map-only job, implement the `getOutputSchema()` to define the mapper output schema.
 
-#### Can an Avro job uses Writable as intermediate types?
+##### Can an Avro job use Writable as intermediate types?
 
 Yes, that is supported. Take a look at the `BasicAvroIntermediateWritableJob` job test example.
 
