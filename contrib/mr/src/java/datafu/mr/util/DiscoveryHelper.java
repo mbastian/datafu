@@ -110,26 +110,28 @@ public class DiscoveryHelper
     }
     return res;
   }
-  
-  private static boolean hasConfiguredReducerClass(AbstractJob job) {
+
+  private static boolean hasConfiguredReducerClass(AbstractJob job)
+  {
     try
     {
       return !job.getClass().getMethod("getReducerClass").getDeclaringClass().equals(AbstractJob.class);
     }
     catch (Exception e)
     {
-     throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
   }
-  
-  private static boolean hasConfiguredMapperClass(AbstractJob job) {
+
+  private static boolean hasConfiguredMapperClass(AbstractJob job)
+  {
     try
     {
       return !job.getClass().getMethod("getMapperClass").getDeclaringClass().equals(AbstractJob.class);
     }
     catch (Exception e)
     {
-     throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
   }
 }

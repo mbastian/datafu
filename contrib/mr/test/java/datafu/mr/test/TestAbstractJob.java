@@ -139,14 +139,17 @@ public class TestAbstractJob extends TestBase
     configureAndRunJob(new BasicMultipleOutputsJob(), "BasicMultipleOutputsJob", _inputPath, _outputPath);
     checkMultipleOutputs();
   }
-  
+
   @Test
   public void testBasicAvroWordCountOverrideFormatJob() throws IOException,
       InterruptedException,
       ClassNotFoundException
   {
     writeWordCountInput();
-    configureAndRunJob(new BasicAvroWordCountOverrideFormatJob(), "BasicAvroWordCountOverrideFormatJob", _inputPath, _outputPath);
+    configureAndRunJob(new BasicAvroWordCountOverrideFormatJob(),
+                       "BasicAvroWordCountOverrideFormatJob",
+                       _inputPath,
+                       _outputPath);
     checkWordCountOutput();
   }
 
