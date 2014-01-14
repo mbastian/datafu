@@ -12,6 +12,11 @@ Basic Word Count example:
 public class WordCountJob extends AbstractJob
 {
 
+  public WordCountJob(String name, Properties props)
+  {
+    super(name, props);	
+  }
+
   @Override
   public void setupInputFormat(Job job) throws IOException
   {
@@ -78,6 +83,11 @@ public class AvroWordCountJob extends AbstractAvroJob
                                                                                   "count",
                                                                                   null));
 
+  public AvroWordCountJob(String name, Properties props)
+  {
+    super(name, props);	
+  }
+
   @Override
   public Schema getOutputSchema()
   {
@@ -130,6 +140,12 @@ public class AvroWordCountJob extends AbstractAvroJob
 * Staged output to avoid deleting the existing file if the job fails
 * Estimate the number of reducers needed if not provided
 * Supports `#LATEST` suffix in input paths to work with timestamped folders
+
+## Dependencies
+
+DataFu-MR depends on Avro >= 1.7.0 and Hadoop >= 1.0.
+
+For a complete list of dependencies, consult the `ivy.xml` file.
 
 ## FAQ
 
