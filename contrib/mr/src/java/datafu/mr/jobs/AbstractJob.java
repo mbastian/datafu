@@ -124,6 +124,7 @@ public abstract class AbstractJob extends Configured
   public AbstractJob()
   {
     setConf(new Configuration());
+    setName(getClass().getSimpleName());
   }
 
   /**

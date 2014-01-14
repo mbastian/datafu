@@ -51,6 +51,7 @@ public abstract class AbstractAvroJob extends AbstractJob
 
   public AbstractAvroJob()
   {
+    super();
     setConf(new Configuration());
   }
 
