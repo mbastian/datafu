@@ -59,7 +59,7 @@ import datafu.mr.util.ReduceEstimator;
  * <li><em>temp.path</em> - Temporary path under which intermediate files are stored</li>
  * <li><em>num.reducers</em> - Number of reducers to use</li>
  * <li><em>counters.path</em> - Path to store job counters in</li>
- * <li><em>use.latest.expansion</em> - Expand input paths with #LATEST</li>
+ * <li><em>use.latest.expansion</em> - Expand input paths with #LATEST (boolean)</li>
  * </ul>
  * 
  * <p>
@@ -96,6 +96,15 @@ import datafu.mr.util.ReduceEstimator;
  * Hadoop configuration may be provided by setting a property with the prefix <em>hadoop-conf.</em>.
  * For example, <em>mapred.min.split.size</em> can be configured by setting property
  * <em>hadoop-conf.mapred.min.split.size</em> to the desired value.
+ * </p>
+ * 
+ * <p>
+ * Three methods can be overridden to customize the execution flow:
+ * <ul>
+ * <li><em>init(): </em>Just after instantiation</li>
+ * <li><em>configure(): </em>Before the job starts</li>
+ * <li><em>finish(): </em>After the job ended (successfully)</li>
+ * </ul>
  * </p>
  * 
  * @author "Mathieu Bastian"
@@ -288,7 +297,7 @@ public abstract class AbstractJob extends Configured
   }
 
   /**
-   * Overridden to provide custom configuration after instanciation
+   * Overridden to provide custom configuration after instantiation
    * 
    * @param conf
    */
@@ -302,6 +311,15 @@ public abstract class AbstractJob extends Configured
    * @param conf
    */
   public void configure(Job job)
+  {
+  }
+
+  /**
+   * Overridden to provide custom actions after the job finishes.
+   * 
+   * @param conf
+   */
+  public void finish(Job job)
   {
   }
 
@@ -513,8 +531,28 @@ public abstract class AbstractJob extends Configured
     return path;
   }
 
+  /**
+   * Setup the job input format.
+   * <p>
+   * One can use <code>job.setInputFormatClass()</code> to configure the job's input format.
+   * 
+   * @param job
+   *          the Hadoop job
+   * @throws IOException
+   *           when the configuration is throwing an error
+   */
   protected abstract void setupInputFormat(Job job) throws IOException;
 
+  /**
+   * Setup the job output format.
+   * <p>
+   * One can use <code>job.setOutputFormatClass()</code> to configure the job's input format.
+   * 
+   * @param job
+   *          the Hadoop job
+   * @throws IOException
+   *           when the configuration is throwing an error
+   */
   protected abstract void setupOutputFormat(Job job) throws IOException;
 
   /**
@@ -715,21 +753,25 @@ public abstract class AbstractJob extends Configured
     else
     {
       job.setNumReduceTasks(0);
+      _log.info("Using 0 reducers (map-only)");
     }
 
     if (getCombinerClass() != null)
     {
       job.setCombinerClass(getCombinerClass());
+      _log.info(String.format("Using %d as combiner", getCombinerClass().getSimpleName()));
     }
 
     if (getPartitionerClass() != null)
     {
       job.setPartitionerClass(getPartitionerClass());
+      _log.info(String.format("Using %d as partitioner", getCombinerClass().getSimpleName()));
     }
 
     if (getMapOutputKeyClass() != null)
     {
       job.setMapOutputKeyClass(getMapOutputKeyClass());
+      _log.info(String.format("Using %d as map output key class", getMapOutputKeyClass().getSimpleName()));
     }
     else
     {
@@ -748,6 +790,7 @@ public abstract class AbstractJob extends Configured
     if (getMapOutputValueClass() != null)
     {
       job.setMapOutputValueClass(getMapOutputValueClass());
+      _log.info(String.format("Using %d as map output value class", getMapOutputValueClass().getSimpleName()));
     }
     else
     {
@@ -759,7 +802,7 @@ public abstract class AbstractJob extends Configured
       }
       else
       {
-        _log.warn("Could not discover the map output key class");
+        _log.warn("Could not discover the map output value class");
       }
     }
 
@@ -768,6 +811,7 @@ public abstract class AbstractJob extends Configured
       if (getOutputKeyClass() != null)
       {
         job.setOutputKeyClass(getOutputKeyClass());
+        _log.info(String.format("Using %d as output key class", getOutputKeyClass().getSimpleName()));
       }
       else
       {
@@ -786,6 +830,7 @@ public abstract class AbstractJob extends Configured
       if (getOutputValueClass() != null)
       {
         job.setOutputValueClass(getOutputValueClass());
+        _log.info(String.format("Using %d as output value class", getOutputValueClass().getSimpleName()));
       }
       else
       {
@@ -797,14 +842,17 @@ public abstract class AbstractJob extends Configured
         }
         else
         {
-          _log.warn("Could not discover the reduce output key class");
+          _log.warn("Could not discover the reduce output value class");
         }
       }
     }
     else
     {
       job.setOutputKeyClass(job.getMapOutputKeyClass());
+      _log.info(String.format("Using %d as output key class (map-only)", getMapOutputKeyClass().getSimpleName()));
+
       job.setOutputValueClass(job.getMapOutputValueClass());
+      _log.info(String.format("Using %d as output value class (map-only)", getMapOutputValueClass().getSimpleName()));
     }
 
     setupInputFormat(job);
@@ -813,11 +861,13 @@ public abstract class AbstractJob extends Configured
     if (getGroupingComparator() != null)
     {
       job.setGroupingComparatorClass(getGroupingComparator());
+      _log.info(String.format("Using %d as grouping comparator", getGroupingComparator().getSimpleName()));
     }
 
     if (getSortComparator() != null)
     {
       job.setSortComparatorClass(getSortComparator());
+      _log.info(String.format("Using %d as sort comparator", getSortComparator().getSimpleName()));
     }
 
     configure(job);
@@ -827,6 +877,8 @@ public abstract class AbstractJob extends Configured
       _log.error("Job failed! Quitting...");
       throw new RuntimeException("Job failed");
     }
+
+    finish(job);
   }
 
   /**

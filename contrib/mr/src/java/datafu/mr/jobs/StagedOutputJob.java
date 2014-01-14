@@ -296,7 +296,7 @@ public class StagedOutputJob extends Job implements Callable<Boolean>
     else
     {
       FileSystem fs = actualOutputPath.getFileSystem(getConfiguration());
-      _log.info(String.format("Job failed, deleting staged path[%s]", stagedPath));
+      _log.warn(String.format("Job failed, deleting staged path[%s]", stagedPath));
       try
       {
         fs.delete(stagedPath, true);
@@ -306,7 +306,6 @@ public class StagedOutputJob extends Job implements Callable<Boolean>
       }
     }
 
-    _log.warn("retVal was false for some reason...");
     return retVal;
   }
 

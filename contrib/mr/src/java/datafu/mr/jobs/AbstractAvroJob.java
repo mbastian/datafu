@@ -42,9 +42,36 @@ import datafu.mr.util.DiscoveryHelper;
 import datafu.mr.util.IntermediateTypeHelper;
 import datafu.mr.util.LatestExpansionFunction;
 
+/**
+ * Base class for Avro Hadoop jobs.
+ * 
+ * <p>
+ * This class extends <em>AbstractJob</em> and configures the input/output to be Avro. Behind the
+ * scenes it uses a <em>AvroKeyInputFormat</em> so the expected map input key class is
+ * <em>AvroKey</em> and the map input value class is <em>NullWritable</em>.
+ * </p>
+ * 
+ * This class recognizes the following properties:
+ * 
+ * <ul>
+ * <li><em>combine.inputs</em> - Combine input paths (boolean)</li>
+ * </ul>
+ * 
+ * <p>
+ * When using Avro's <em>GenericRecord</em> to pass data from the mapper to the reducer, implement
+ * the <em>getMapOutputKeySchema()</em> and <em>getMapOutputValueSchema()</em> methods to specify
+ * the schemas. If the types are POJO, their schema will be inferred if not specified.
+ * </p>
+ * 
+ * <p>
+ * If the output type is an Avro <em>GenericRecord</em>, implement the <em>getOutputSchema()</em>
+ * method to specify the schema. If the type is POJO, its schema will be inferred if not specified.
+ * </p>
+ * 
+ * @author "Mathieu Bastian"
+ */
 public abstract class AbstractAvroJob extends AbstractJob
 {
-
   private final Logger _log = Logger.getLogger(AbstractAvroJob.class);
 
   private boolean _combineInputs;
@@ -65,16 +92,31 @@ public abstract class AbstractAvroJob extends AbstractJob
     }
   }
 
+  /**
+   * Gets the Avro output schema.
+   * 
+   * @return output schema
+   */
   protected Schema getOutputSchema()
   {
     return null;
   }
 
+  /**
+   * Gets the Avro map output key schema.
+   * 
+   * @return map key schema
+   */
   protected Schema getMapOutputKeySchema()
   {
     return null;
   }
 
+  /**
+   * Gets the Avro map output value schema
+   * 
+   * @return map value schema
+   */
   protected Schema getMapOutputValueSchema()
   {
     return null;
@@ -86,10 +128,12 @@ public abstract class AbstractAvroJob extends AbstractJob
     if (_combineInputs)
     {
       job.setInputFormatClass(CombinedAvroKeyInputFormat.class);
+      _log.info(String.format("Set input format class: %s", CombinedAvroKeyInputFormat.class.getSimpleName()));
     }
     else
     {
       job.setInputFormatClass(AvroKeyInputFormat.class);
+      _log.info(String.format("Set input format class: %s", AvroKeyInputFormat.class.getSimpleName()));
     }
   }
 
