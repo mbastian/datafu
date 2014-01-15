@@ -765,7 +765,7 @@ public abstract class AbstractJob extends Configured
     if (getPartitionerClass() != null)
     {
       job.setPartitionerClass(getPartitionerClass());
-      _log.info(String.format("Using %s as partitioner", getCombinerClass().getSimpleName()));
+      _log.info(String.format("Using %s as partitioner", getPartitionerClass().getSimpleName()));
     }
 
     if (getMapOutputKeyClass() != null)
