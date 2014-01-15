@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapred.AvroValue;
 import org.apache.avro.mapreduce.AvroJob;
@@ -158,9 +158,11 @@ public abstract class AbstractAvroJob extends AbstractJob
           // Infer schema
           ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[2];
           Class<?> keyClass = (Class<?>) type.getActualTypeArguments()[0];
-          if (keyClass.equals(GenericData.Record.class))
+          if (GenericRecord.class.isAssignableFrom(keyClass))
           {
-            _log.warn("Can't infer schema of GenericData.Record");
+            _log.warn("Can't infer schema of GenericRecord");
+            throw new RuntimeException("A schema needs to be provided for the map output key type. "
+                + "Implement the getMapOutputKeySchema() method to return the schema of the GenericRecord");
           }
           else
           {
@@ -184,9 +186,11 @@ public abstract class AbstractAvroJob extends AbstractJob
           // Infer schema
           ParameterizedType type = (ParameterizedType) IntermediateTypeHelper.getTypes(mapperClass, Mapper.class)[3];
           Class<?> valueClass = (Class<?>) type.getActualTypeArguments()[0];
-          if (valueClass.equals(GenericData.Record.class))
+          if (GenericRecord.class.isAssignableFrom(valueClass))
           {
-            _log.warn("Can't infer schema of GenericData.Record");
+            _log.warn("Can't infer schema of GenericRecord");
+            throw new RuntimeException("A schema needs to be provided for the map output value type. "
+                + "Implement the getMapOutputValueSchema() method to return the schema of the GenericRecord");
           }
           else
           {
@@ -227,9 +231,11 @@ public abstract class AbstractAvroJob extends AbstractJob
         type = (ParameterizedType) IntermediateTypeHelper.getTypes(reducerClass, Reducer.class)[2];
       }
       Class<?> keyClass = (Class<?>) type.getActualTypeArguments()[0];
-      if (keyClass.equals(GenericData.Record.class))
+      if (GenericRecord.class.isAssignableFrom(keyClass))
       {
-        _log.warn("Can't infer schema of GenericData.Record");
+        _log.warn("Can't infer schema of GenericRecord");
+        throw new RuntimeException("A schema needs to be provided for the output key type. "
+            + "Implement the getOutputSchema() method to return the schema of the GenericRecord");
       }
       else
       {
