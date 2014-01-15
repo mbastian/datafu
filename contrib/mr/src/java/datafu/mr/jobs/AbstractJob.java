@@ -759,19 +759,19 @@ public abstract class AbstractJob extends Configured
     if (getCombinerClass() != null)
     {
       job.setCombinerClass(getCombinerClass());
-      _log.info(String.format("Using %d as combiner", getCombinerClass().getSimpleName()));
+      _log.info(String.format("Using %s as combiner", getCombinerClass().getSimpleName()));
     }
 
     if (getPartitionerClass() != null)
     {
       job.setPartitionerClass(getPartitionerClass());
-      _log.info(String.format("Using %d as partitioner", getCombinerClass().getSimpleName()));
+      _log.info(String.format("Using %s as partitioner", getCombinerClass().getSimpleName()));
     }
 
     if (getMapOutputKeyClass() != null)
     {
       job.setMapOutputKeyClass(getMapOutputKeyClass());
-      _log.info(String.format("Using %d as map output key class", getMapOutputKeyClass().getSimpleName()));
+      _log.info(String.format("Using %s as map output key class", getMapOutputKeyClass().getSimpleName()));
     }
     else
     {
@@ -790,7 +790,7 @@ public abstract class AbstractJob extends Configured
     if (getMapOutputValueClass() != null)
     {
       job.setMapOutputValueClass(getMapOutputValueClass());
-      _log.info(String.format("Using %d as map output value class", getMapOutputValueClass().getSimpleName()));
+      _log.info(String.format("Using %s as map output value class", getMapOutputValueClass().getSimpleName()));
     }
     else
     {
@@ -811,7 +811,7 @@ public abstract class AbstractJob extends Configured
       if (getOutputKeyClass() != null)
       {
         job.setOutputKeyClass(getOutputKeyClass());
-        _log.info(String.format("Using %d as output key class", getOutputKeyClass().getSimpleName()));
+        _log.info(String.format("Using %s as output key class", getOutputKeyClass().getSimpleName()));
       }
       else
       {
@@ -830,7 +830,7 @@ public abstract class AbstractJob extends Configured
       if (getOutputValueClass() != null)
       {
         job.setOutputValueClass(getOutputValueClass());
-        _log.info(String.format("Using %d as output value class", getOutputValueClass().getSimpleName()));
+        _log.info(String.format("Using %s as output value class", getOutputValueClass().getSimpleName()));
       }
       else
       {
@@ -849,10 +849,10 @@ public abstract class AbstractJob extends Configured
     else
     {
       job.setOutputKeyClass(job.getMapOutputKeyClass());
-      _log.info(String.format("Using %d as output key class (map-only)", getMapOutputKeyClass().getSimpleName()));
+      _log.info(String.format("Using %s as output key class (map-only)", job.getMapOutputKeyClass().getSimpleName()));
 
       job.setOutputValueClass(job.getMapOutputValueClass());
-      _log.info(String.format("Using %d as output value class (map-only)", getMapOutputValueClass().getSimpleName()));
+      _log.info(String.format("Using %s as output value class (map-only)", job.getMapOutputValueClass().getSimpleName()));
     }
 
     setupInputFormat(job);
@@ -861,13 +861,13 @@ public abstract class AbstractJob extends Configured
     if (getGroupingComparator() != null)
     {
       job.setGroupingComparatorClass(getGroupingComparator());
-      _log.info(String.format("Using %d as grouping comparator", getGroupingComparator().getSimpleName()));
+      _log.info(String.format("Using %s as grouping comparator", getGroupingComparator().getSimpleName()));
     }
 
     if (getSortComparator() != null)
     {
       job.setSortComparatorClass(getSortComparator());
-      _log.info(String.format("Using %d as sort comparator", getSortComparator().getSimpleName()));
+      _log.info(String.format("Using %s as sort comparator", getSortComparator().getSimpleName()));
     }
 
     configure(job);
