@@ -56,7 +56,7 @@ public class PathUtils
   public final static TimeZone timeZone = TimeZone.getTimeZone("UTC");
   public static final SimpleDateFormat datedPathFormat = new SimpleDateFormat("yyyyMMdd");
   public static final SimpleDateFormat nestedDatedPathFormat = new SimpleDateFormat("yyyy/MM/dd");
-  public static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+  public static final SimpleDateFormat dateTimedPathFormat = new SimpleDateFormat("yyyyMMddHHmm");
   private static final Pattern timestampPathPattern = Pattern.compile(".+/(\\d{8})");
   private static final Pattern dailyPathPattern = Pattern.compile("(.+)/(\\d{4}/\\d{2}/\\d{2})");
 
@@ -77,7 +77,7 @@ public class PathUtils
   {
     datedPathFormat.setTimeZone(timeZone);
     nestedDatedPathFormat.setTimeZone(timeZone);
-    dateTimeFormat.setTimeZone(timeZone);
+    dateTimedPathFormat.setTimeZone(timeZone);
   }
 
   /**
@@ -91,6 +91,28 @@ public class PathUtils
   public static void keepLatestDatedPaths(FileSystem fs, Path path, int retentionCount) throws IOException
   {
     LinkedList<DatePath> outputs = new LinkedList<DatePath>(PathUtils.findDatedPaths(fs, path));
+    _log.info(String.format("Found %d matching folders in %s", outputs.size(), path.toString()));
+
+    while (outputs.size() > retentionCount)
+    {
+      DatePath toDelete = outputs.removeFirst();
+      _log.info(String.format("Removing %s", toDelete.getPath()));
+      fs.delete(toDelete.getPath(), true);
+    }
+  }
+
+  /**
+   * Delete all but the last N days of paths matching the "yyyyMMdd" format.
+   * 
+   * @param fs
+   * @param path
+   * @param retentionCount
+   * @throws IOException
+   */
+  public static void keepLatestDateTimedPaths(FileSystem fs, Path path, int retentionCount) throws IOException
+  {
+    LinkedList<DatePath> outputs = new LinkedList<DatePath>(PathUtils.findDateTimedPaths(fs, path));
+    _log.info(String.format("Found %d matching folders in %s", outputs.size(), path.toString()));
 
     while (outputs.size() > retentionCount)
     {
@@ -184,6 +206,38 @@ public class PathUtils
    */
   public static List<DatePath> findDatedPaths(FileSystem fs, Path path) throws IOException
   {
+    return findDatedPaths(fs, path, datedPathFormat);
+  }
+
+  /**
+   * List all paths matching the "yyyyMMddHHmm" format under a given path.
+   * 
+   * @param fs
+   *          file system
+   * @param path
+   *          path to search under
+   * @return paths
+   * @throws IOException
+   */
+  public static List<DatePath> findDateTimedPaths(FileSystem fs, Path path) throws IOException
+  {
+    return findDatedPaths(fs, path, dateTimedPathFormat);
+  }
+
+  /**
+   * List all paths matching the given date format under a given path.
+   * 
+   * @param fs
+   *          file system
+   * @param path
+   *          path to search under
+   * @param format
+   *          the date format
+   * @return paths
+   * @throws IOException
+   */
+  private static List<DatePath> findDatedPaths(FileSystem fs, Path path, SimpleDateFormat format) throws IOException
+  {
     FileStatus[] outputPaths = fs.listStatus(path, nonHiddenPathFilter);
 
     List<DatePath> outputs = new ArrayList<DatePath>();
@@ -195,7 +249,7 @@ public class PathUtils
         Date date;
         try
         {
-          date = datedPathFormat.parse(outputPath.getPath().getName());
+          date = format.parse(outputPath.getPath().getName());
         }
         catch (ParseException e)
         {

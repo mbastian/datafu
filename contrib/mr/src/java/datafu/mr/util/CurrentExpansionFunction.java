@@ -40,7 +40,7 @@ public class CurrentExpansionFunction
   {
     if (path.endsWith(CURRENT_SUFFIX))
     {
-      String destPath = PathUtils.dateTimeFormat.format(new Date());
+      String destPath = PathUtils.dateTimedPathFormat.format(new Date());
       path = path.substring(0, path.length() - CURRENT_SUFFIX.length()) + destPath;
     }
     return path;

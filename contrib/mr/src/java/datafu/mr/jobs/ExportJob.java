@@ -85,7 +85,7 @@ public class ExportJob extends AbstractJob
         _log.info(String.format("Moving from [%s] to [%s]", sourcePath, destPath));
         fs.rename(sourcePath, destPath);
 
-        PathUtils.keepLatestDatedPaths(fs, destPath.getParent(), keep);
+        PathUtils.keepLatestDateTimedPaths(fs, destPath.getParent(), keep);
       }
 
     }

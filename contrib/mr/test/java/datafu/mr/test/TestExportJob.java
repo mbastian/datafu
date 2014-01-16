@@ -30,12 +30,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import datafu.mr.fs.PathUtils;
 import datafu.mr.jobs.ExportJob;
 
 public class TestExportJob extends TestBase
 {
 
-  private final Logger _log = Logger.getLogger(TestLatestExpansionFunction.class);
+  private final Logger _log = Logger.getLogger(TestExportJob.class);
   private final Path _inputPath = new Path("/input");
   private final Path _outputPath = new Path("/output");
 
@@ -64,28 +65,32 @@ public class TestExportJob extends TestBase
     _log.info("*** Cleaning input and output paths");
     getFileSystem().delete(_inputPath, true);
     getFileSystem().mkdirs(_inputPath);
+    getFileSystem().delete(_outputPath, true);
+    getFileSystem().mkdirs(_outputPath);
   }
 
   @Test
-  public void latestSimpleTest() throws IOException
+  public void simpleTest() throws IOException
   {
     Path input = new Path(_inputPath, "FOO");
     writeFile(input, "");
-    
-    Path outputA = new Path(_outputPath, "A");
+    Path outputA = new Path(_outputPath, "201401011200");
     writeFile(outputA, "");
-    Path outputB = new Path(_outputPath, "B");
+    Path outputB = new Path(_outputPath, "201401011201");
     writeFile(outputB, "");
-    Path outputC = new Path(_outputPath, "C");
+    Path outputC = new Path(_outputPath, "201401011202");
     writeFile(outputC, "");
-    
+
     Properties _props = newTestProperties();
-    _props.setProperty("export.spec", "[{\"source\":\""+input+"\",\"dest\":\""+_outputPath+"\",\"keep\":3}]");
+    _props.setProperty("export.spec", "[{\"source\":\"" + input + "\",\"dest\":\"" + _outputPath
+        + "/#CURRENT\",\"keep\":3}]");
     ExportJob exportJob = new ExportJob("ExportJob", _props);
     exportJob.run();
-    
+
     Assert.assertFalse(getFileSystem().exists(input));
-    Assert.assertTrue(getFileSystem().exists(outputA));
+    Assert.assertTrue(getFileSystem().exists(_outputPath));
+    Assert.assertEquals(countOutputFolders(), 3);
+    Assert.assertTrue(getFileSystem().exists(outputC));
     Assert.assertTrue(getFileSystem().exists(outputB));
     Assert.assertFalse(getFileSystem().exists(outputA));
   }
@@ -104,5 +109,11 @@ public class TestExportJob extends TestBase
     fin.close();
 
     Assert.assertTrue(_fs.exists(filePath));
+  }
+
+  private int countOutputFolders() throws IOException
+  {
+    FileSystem fs = getFileSystem();
+    return fs.listStatus(_outputPath, PathUtils.nonHiddenPathFilter).length;
   }
 }
