@@ -541,7 +541,9 @@ public abstract class AbstractJob extends Configured
    * @throws IOException
    *           when the configuration is throwing an error
    */
-  protected abstract void setupInputFormat(Job job) throws IOException;
+  protected void setupInputFormat(Job job) throws IOException
+  {
+  }
 
   /**
    * Setup the job output format.
@@ -553,7 +555,9 @@ public abstract class AbstractJob extends Configured
    * @throws IOException
    *           when the configuration is throwing an error
    */
-  protected abstract void setupOutputFormat(Job job) throws IOException;
+  protected void setupOutputFormat(Job job) throws IOException
+  {
+  }
 
   /**
    * Gets the mapper class
