@@ -54,9 +54,9 @@ public class PathUtils
   private static Logger _log = Logger.getLogger(PathUtils.class);
 
   public final static TimeZone timeZone = TimeZone.getTimeZone("UTC");
-  public static final SimpleDateFormat datedPathFormat = new SimpleDateFormat("yyyyMMdd");
+  public static final SimpleDateFormat datedPathFormat = new SimpleDateFormat("yyyy-MM-dd");
   public static final SimpleDateFormat nestedDatedPathFormat = new SimpleDateFormat("yyyy/MM/dd");
-  public static final SimpleDateFormat dateTimedPathFormat = new SimpleDateFormat("yyyyMMddHHmm");
+  public static final SimpleDateFormat dateTimedPathFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
   private static final Pattern timestampPathPattern = Pattern.compile(".+/(\\d{8})");
   private static final Pattern dailyPathPattern = Pattern.compile("(.+)/(\\d{4}/\\d{2}/\\d{2})");
 
