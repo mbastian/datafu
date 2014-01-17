@@ -230,6 +230,8 @@ Then, use the `MultipleOutputs.write()` method to configure which file output to
 
 If an input path ends with #LATEST (e.g. `/data/events/#LATEST`), the system will browse the folder and pick the first folder by lexicographic order. For instance, if `/data/events` contains two folders `/data/events/2013-01-01` and `/data/events/2014-01-01` it will replace `#LATEST` by `2014-01-01`.
 
+Set the `use.latest.expansion` parameter to `true` to enable this feature. The default value is `false`.
+
 ##### How to use a custom input or output formats?
 
 In the case of an job extending `AbstractJob`, the `setupInputFormat()` and `setupOutputFormat()` methods have to be implemented so it's up to you which format to use. In the case of an `AbstractAvroJob`, the default input and output format are Avro but can be overridden. For instance, to use Avro as input but customize the output format simply override the `setupOutputFormat()` method.
