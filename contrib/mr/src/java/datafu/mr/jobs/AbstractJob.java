@@ -678,26 +678,31 @@ public abstract class AbstractJob extends Configured
       ClassNotFoundException
   {
     init(getConf());
+    
+    List<Path> inputPaths = getInputPaths();
+    if(inputPaths == null) {
+      throw new RuntimeException("Input path is not specified. Setup the 'input.path' parameter.");
+    }
 
     LatestExpansionFunction latestExpansionFunction = new LatestExpansionFunction(getFileSystem(), _log);
-    List<String> inputPaths = new ArrayList<String>();
-    for (Path p : getInputPaths())
+    List<String> inputPathsStr = new ArrayList<String>();
+    for (Path p : inputPaths)
     {
       String ip = _useLatestExpansion ? latestExpansionFunction.apply(p.toString()) : p.toString();
-      inputPaths.add(ip);
+      inputPathsStr.add(ip);
       _log.info(String.format("Adding %s to the input paths", ip));
+    }
+    
+    if (inputPathsStr.isEmpty())
+    {
+      throw new RuntimeException("No input paths can be found");
     }
 
     Path outputPath = getOutputPath();
 
-    if (inputPaths.isEmpty())
-    {
-      throw new IllegalArgumentException("Input path is not specified.");
-    }
-
     if (outputPath == null)
     {
-      throw new IllegalArgumentException("Output path is not specified.");
+      throw new RuntimeException("Output path is not specified. Setup the 'output.path' parameter.");
     }
 
     if (getDistributedCachePaths() != null)
@@ -726,12 +731,15 @@ public abstract class AbstractJob extends Configured
     final StagedOutputJob job =
         StagedOutputJob.createStagedJob(getConf(),
                                         getName(),
-                                        inputPaths,
+                                        inputPathsStr,
                                         _tempPath + outputPath.toString(),
                                         outputPath.toString(),
                                         _log);
 
     Class<? extends Mapper> mapperClass = DiscoveryHelper.getMapperClass(this);
+    if(mapperClass == null) {
+      throw new RuntimeException("No mapper class implementation is defined. Override the 'getMapperClass()' method.");
+    }
     job.setMapperClass(mapperClass);
 
     Class<? extends Reducer> reducerClass = DiscoveryHelper.getReducerClass(this);
