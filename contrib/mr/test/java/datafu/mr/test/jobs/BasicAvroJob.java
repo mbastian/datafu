@@ -60,19 +60,19 @@ public class BasicAvroJob extends AbstractAvroJob
   }
 
   @Override
-  protected Schema getMapOutputKeySchema()
+  public Schema getMapOutputKeySchema()
   {
     return KEY_SCHEMA;
   }
 
   @Override
-  protected Schema getMapOutputValueSchema()
+  public Schema getMapOutputValueSchema()
   {
     return VALUE_SCHEMA;
   }
 
   @Override
-  protected Schema getOutputSchema()
+  public Schema getOutputSchema()
   {
     return OUTPUT_SCHEMA;
   }

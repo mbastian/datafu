@@ -51,7 +51,7 @@ public class BasicAvroIntermediateObjectJob extends AbstractAvroJob
   }
 
   @Override
-  protected Schema getOutputSchema()
+  public Schema getOutputSchema()
   {
     return OUTPUT_SCHEMA;
   }

@@ -43,7 +43,7 @@ public class BasicAvroMapOnlyJob extends AbstractAvroJob
   }
 
   @Override
-  protected Schema getOutputSchema()
+  public Schema getOutputSchema()
   {
     return OUTPUT_SCHEMA;
   }

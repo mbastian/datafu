@@ -161,19 +161,19 @@ public class AvroJoin extends AbstractAvroJob
   }
 
   @Override
-  protected Schema getMapOutputKeySchema()
+  public Schema getMapOutputKeySchema()
   {
     return new Schema.Parser().parse(getConf().get(KEY_SCHEMA));
   }
 
   @Override
-  protected Schema getMapOutputValueSchema()
+  public Schema getMapOutputValueSchema()
   {
     return new Schema.Parser().parse(getConf().get(INTERMEDIATE_SCHEMA));
   }
 
   @Override
-  protected Schema getOutputSchema()
+  public Schema getOutputSchema()
   {
     return new Schema.Parser().parse(getConf().get(OUTPUT_SCHEMA));
   }

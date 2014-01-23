@@ -29,7 +29,6 @@ import org.apache.avro.mapreduce.AvroJob;
 import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.avro.reflect.ReflectData;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -55,6 +54,9 @@ import datafu.mr.util.LatestExpansionFunction;
  * 
  * <ul>
  * <li><em>combine.inputs</em> - Combine input paths (boolean)</li>
+ * <li><em>map.output.key.schema</em> - Map output key Avro schema</li>
+ * <li><em>map.output.value.schema</em> - Map output value Avro schema</li>
+ * <li><em>output.schema</em> - Output Avro schema</li>
  * </ul>
  * 
  * <p>
@@ -74,21 +76,41 @@ public abstract class AbstractAvroJob extends AbstractJob
 {
   private final Logger _log = Logger.getLogger(AbstractAvroJob.class);
 
-  private boolean _combineInputs;
+  protected boolean combineInputs;
+  protected Schema outputSchema;
+  protected Schema mapOutputKeySchema;
+  protected Schema mapOutputValueSchema;
 
   public AbstractAvroJob()
   {
     super();
-    setConf(new Configuration());
   }
 
   public AbstractAvroJob(String name, Properties props)
   {
     super(name, props);
+  }
+
+  @Override
+  public void setProperties(Properties props)
+  {
+    super.setProperties(props);
 
     if (props.containsKey("combine.inputs"))
     {
       setCombineInputs(Boolean.parseBoolean(props.getProperty("combine.inputs")));
+    }
+    if (props.containsKey("map.output.key.schema"))
+    {
+      setMapOutputKeySchema(new Schema.Parser().parse(props.getProperty("map.output.key.schema")));
+    }
+    if (props.containsKey("map.output.value.schema"))
+    {
+      setMapOutputValueSchema(new Schema.Parser().parse(props.getProperty("map.output.value.schema")));
+    }
+    if (props.containsKey("output.schema"))
+    {
+      setOutputSchema(new Schema.Parser().parse(props.getProperty("output.schema")));
     }
   }
 
@@ -97,9 +119,20 @@ public abstract class AbstractAvroJob extends AbstractJob
    * 
    * @return output schema
    */
-  protected Schema getOutputSchema()
+  public Schema getOutputSchema()
   {
-    return null;
+    return outputSchema;
+  }
+
+  /**
+   * Sets the Avro output schema
+   * 
+   * @param schema
+   *          output schema
+   */
+  public void setOutputSchema(Schema schema)
+  {
+    this.outputSchema = schema;
   }
 
   /**
@@ -107,9 +140,20 @@ public abstract class AbstractAvroJob extends AbstractJob
    * 
    * @return map key schema
    */
-  protected Schema getMapOutputKeySchema()
+  public Schema getMapOutputKeySchema()
   {
-    return null;
+    return mapOutputKeySchema;
+  }
+
+  /**
+   * Sets the Avro map output key schema
+   * 
+   * @param schema
+   *          map key schema
+   */
+  public void setMapOutputKeySchema(Schema schema)
+  {
+    this.mapOutputKeySchema = schema;
   }
 
   /**
@@ -117,15 +161,26 @@ public abstract class AbstractAvroJob extends AbstractJob
    * 
    * @return map value schema
    */
-  protected Schema getMapOutputValueSchema()
+  public Schema getMapOutputValueSchema()
   {
-    return null;
+    return mapOutputValueSchema;
+  }
+
+  /**
+   * Sets the Avro map output value schema
+   * 
+   * @param schema
+   *          map value schema
+   */
+  public void setMapOutputValueSchema(Schema schema)
+  {
+    this.mapOutputValueSchema = schema;
   }
 
   @Override
   public void setupInputFormat(Job job) throws IOException
   {
-    if (_combineInputs)
+    if (getCombineInputs())
     {
       job.setInputFormatClass(CombinedAvroKeyInputFormat.class);
       _log.info(String.format("Set input format class: %s", CombinedAvroKeyInputFormat.class.getSimpleName()));
@@ -253,7 +308,7 @@ public abstract class AbstractAvroJob extends AbstractJob
    */
   public boolean getCombineInputs()
   {
-    return _combineInputs;
+    return combineInputs;
   }
 
   /**
@@ -264,7 +319,7 @@ public abstract class AbstractAvroJob extends AbstractJob
    */
   public void setCombineInputs(boolean combineInputs)
   {
-    _combineInputs = combineInputs;
+    this.combineInputs = combineInputs;
   }
 
   /**

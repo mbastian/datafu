@@ -28,6 +28,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.RawComparator;
@@ -57,9 +58,28 @@ import datafu.mr.util.ReduceEstimator;
  * <li><em>input.path</em> - Input path job will read from</li>
  * <li><em>output.path</em> - Output path job will write to</li>
  * <li><em>temp.path</em> - Temporary path under which intermediate files are stored</li>
- * <li><em>num.reducers</em> - Number of reducers to use</li>
  * <li><em>counters.path</em> - Path to store job counters in</li>
  * <li><em>use.latest.expansion</em> - Expand input paths with #LATEST (boolean)</li>
+ * </ul>
+ * 
+ * <p>
+ * In addition, the following Hadoop properties can either be set by the <em>Properties</em> given to the constructor, by
+ * using the setter methods or by overriding the getter methods.
+ * </p>
+ * 
+ * <ul>
+ * <li><em>mapred.reduce.tasks</em> - Number of reducers, see <code>{@link Job#setNumReduceTasks(int)}</code></li> 
+ * <li><em>mapreduce.map.class</em> - Mapper class, see <code>{@link Job#setMapperClass(Class)}</code></li> 
+ * <li><em>mapreduce.reduce.class</em> - Reducer class, see <code>{@link Job#setReducerClass(Class)}</code></li> 
+ * <li><em>mapreduce.combine.class</em> - Combiner class, see <code>{@link Job#setCombinerClass(Class)}</code></li> 
+ * <li><em>mapreduce.partitioner.class</em> - Partitioner class, see <code>{@link Job#setPartitionerClass(Class)}</code></li> 
+ * <li><em>mapred.mapoutput.key.class</em> - Map output key class, see <code>{@link Job#setMapOutputKeyClass(Class)}</code></li> 
+ * <li><em>mapred.mapoutput.value.class</em> - Map output value class, see <code>{@link Job#setMapOutputValueClass(Class)}</code></li> 
+ * <li><em>mapred.output.key.class</em> - Output key class, see <code>{@link Job#setOutputKeyClass(Class)}</code></li> 
+ * <li><em>mapred.output.value.class</em> - Output value class, see <code>{@link Job#setOutputValueClass(Class)}</code></li> 
+ * <li><em>mapred.output.key.comparator.class</em> - Sort comparator class, see <code>{@link Job#setSortComparatorClass(Class)}</code></li> 
+ * <li><em>mapred.output.value.groupfn.class</em> - Grouping comparator class, see <code>{@link Job#setGroupingComparatorClass(Class)}</code></li> 
+ * <li><em>mapred.cache.files</em> - Distributed cache files separated by commas, see <code>{@link DistributedCache}
  * </ul>
  * 
  * <p>
@@ -70,15 +90,9 @@ import datafu.mr.util.ReduceEstimator;
  * </p>
  * 
  * <p>
- * The <em>num.reducers</em> fixes the number of reducers. When not set the number of reducers is
- * computed based on the input size. It can also be configured with the Hadoop
- * <em>mapred.reduce.tasks</em> setting.
- * </p>
- * 
- * <p>
  * The <em>temp.path</em> property defines the parent directory for temporary paths, not the
  * temporary path itself. Temporary paths are created under this directory and suffixed with the
- * <em>output.path</em>
+ * <em>output.path</em>. The default is <em>/tmp</em>
  * </p>
  * 
  * <p>
@@ -89,13 +103,7 @@ import datafu.mr.util.ReduceEstimator;
  * </p>
  * 
  * <p>
- * The input and output paths are the only required parameters. The rest are optional.
- * </p>
- * 
- * <p>
- * Hadoop configuration may be provided by setting a property with the prefix <em>hadoop-conf.</em>.
- * For example, <em>mapred.min.split.size</em> can be configured by setting property
- * <em>hadoop-conf.mapred.min.split.size</em> to the desired value.
+ * The input and output paths are the only required parameters. The rest is optional.
  * </p>
  * 
  * <p>
@@ -116,16 +124,32 @@ public abstract class AbstractJob extends Configured
 
   private final Logger _log = Logger.getLogger(AbstractJob.class);
 
-  private Properties _props;
-  private String _name;
-  private Path _countersParentPath;
-  private Integer _numReducers;
-  private List<Path> _inputPaths;
-  private Path _outputPath;
-  private Path _tempPath = new Path("/tmp");
-  private FileSystem _fs;
-  private List<Path> _distributedCache;
-  private boolean _useLatestExpansion;
+  private Properties props;
+  private String name;
+  private Path countersParentPath;
+  private Integer numReducers;
+  private List<Path> inputPaths;
+  private Path outputPath;
+  private Path tempPath = new Path("/tmp");
+  private FileSystem fs;
+  private List<Path> distributedCache;
+  private boolean useLatestExpansion;
+  @SuppressWarnings("rawtypes")
+  protected Class<? extends Mapper> mapperClass;
+  @SuppressWarnings("rawtypes")
+  protected Class<? extends Reducer> reducerClass;
+  @SuppressWarnings("rawtypes")
+  protected Class<? extends Reducer> combinerClass;
+  @SuppressWarnings("rawtypes")
+  protected Class<? extends Partitioner> partitionerClass;
+  @SuppressWarnings("rawtypes")
+  protected Class<? extends RawComparator> groupingComparatorClass;
+  @SuppressWarnings("rawtypes")
+  protected Class<? extends RawComparator> sortComparatorClass;
+  protected Class<?> mapOutputKeyClass;
+  protected Class<?> mapOutputValueClass;
+  protected Class<?> outputKeyClass;
+  protected Class<?> outputValueClass;
 
   /**
    * Initializes the job.
@@ -158,7 +182,7 @@ public abstract class AbstractJob extends Configured
    */
   public String getName()
   {
-    return _name;
+    return name;
   }
 
   /**
@@ -169,7 +193,7 @@ public abstract class AbstractJob extends Configured
    */
   public void setName(String name)
   {
-    _name = name;
+    this.name = name;
   }
 
   /**
@@ -179,7 +203,7 @@ public abstract class AbstractJob extends Configured
    */
   public Properties getProperties()
   {
-    return _props;
+    return props;
   }
 
   /**
@@ -190,12 +214,12 @@ public abstract class AbstractJob extends Configured
    */
   public void setProperties(Properties props)
   {
-    _props = props;
-    updateConfigurationFromProps(_props);
+    this.props = props;
+    updateConfigurationFromProps(props);
 
-    if (_props.get("input.path") != null)
+    if (props.containsKey("input.path"))
     {
-      String[] pathSplit = ((String) _props.get("input.path")).split(",");
+      String[] pathSplit = props.getProperty("input.path").split(",");
       List<Path> paths = new ArrayList<Path>();
       for (String path : pathSplit)
       {
@@ -214,18 +238,18 @@ public abstract class AbstractJob extends Configured
       }
       else
       {
-        throw new RuntimeException("Could not extract input paths from: " + _props.get("input.path"));
+        throw new RuntimeException("Could not extract input paths from: " + props.get("input.path"));
       }
     }
     else
     {
       List<Path> inputPaths = new ArrayList<Path>();
-      for (Object o : _props.keySet())
+      for (Object o : props.keySet())
       {
         String prop = o.toString();
         if (prop.startsWith("input.path."))
         {
-          inputPaths.add(new Path(_props.getProperty(prop)));
+          inputPaths.add(new Path(props.getProperty(prop)));
         }
       }
       if (inputPaths.size() > 0)
@@ -234,39 +258,29 @@ public abstract class AbstractJob extends Configured
       }
     }
 
-    if (_props.get("output.path") != null)
+    if (props.containsKey("output.path"))
     {
-      setOutputPath(new Path((String) _props.get("output.path")));
+      setOutputPath(new Path(props.getProperty("output.path")));
     }
 
-    if (_props.get("temp.path") != null)
+    if (props.containsKey("temp.path"))
     {
-      setTempPath(new Path((String) _props.get("temp.path")));
+      setTempPath(new Path(props.getProperty("temp.path")));
     }
 
-    if (_props.get("counters.path") != null)
+    if (props.containsKey("counters.path"))
     {
-      setCountersParentPath(new Path((String) _props.get("counters.path")));
+      setCountersParentPath(new Path(props.getProperty("counters.path")));
     }
 
-    if (_props.get("num.reducers") != null)
+    if (props.containsKey("mapred.reduce.tasks"))
     {
-      setNumReducers(Integer.parseInt((String) _props.get("num.reducers")));
+      setNumReducers(Integer.parseInt(props.getProperty("mapred.reduce.tasks")));
     }
-    else if (_props.get("mapred.reduce.tasks") != null || _props.get(HADOOP_PREFIX + "mapred.reduce.tasks") != null)
+
+    if (props.containsKey("mapred.cache.files"))
     {
-      if (_props.get("mapred.reduce.tasks") != null)
-      {
-        setNumReducers(Integer.parseInt(_props.getProperty("mapred.reduce.tasks")));
-      }
-      else
-      {
-        setNumReducers(Integer.parseInt(_props.getProperty(HADOOP_PREFIX + "mapred.reduce.tasks")));
-      }
-    }
-    if (_props.get("mapred.cache.files") != null)
-    {
-      String[] pathSplit = ((String) _props.get("mapred.cache.files")).split(",");
+      String[] pathSplit = props.getProperty("mapred.cache.files").split(",");
       List<Path> paths = new ArrayList<Path>();
       for (String path : pathSplit)
       {
@@ -285,15 +299,70 @@ public abstract class AbstractJob extends Configured
       }
       else
       {
-        throw new RuntimeException("Could not extract input paths from: " + _props.get("mapred.cache.files"));
+        throw new RuntimeException("Could not extract distributed cache paths from: " + props.get("mapred.cache.files"));
       }
     }
-    if (_props.get("use.latest.expansion") != null)
+
+    if (props.containsKey("mapreduce.mapper.class"))
     {
-      boolean useLatest = Boolean.parseBoolean((String) _props.get("use.latest.expansion"));
+      setMapperClass(getConf().getClass(props.getProperty("mapreduce.mapper.class"), null, Mapper.class));
+    }
+
+    if (props.containsKey("mapreduce.reducer.class"))
+    {
+      setReducerClass(getConf().getClass(props.getProperty("mapreduce.reducer.class"), null, Reducer.class));
+    }
+
+    if (props.containsKey("mapreduce.combine.class"))
+    {
+      setCombinerClass(getConf().getClass(props.getProperty("mapreduce.combine.class"), null, Reducer.class));
+    }
+
+    if (props.containsKey("mapreduce.partitioner.class"))
+    {
+      setPartitionerClass(getConf().getClass(props.getProperty("mapreduce.partitioner.class"), null, Partitioner.class));
+    }
+
+    if (props.containsKey("mapred.mapoutput.key.class"))
+    {
+      setMapOutputKeyClass(getConf().getClass(props.getProperty("mapred.mapoutput.key.class"), null));
+    }
+
+    if (props.containsKey("mapred.mapoutput.value.class"))
+    {
+      setMapOutputValueClass(getConf().getClass(props.getProperty("mapred.mapoutput.value.class"), null));
+    }
+
+    if (props.containsKey("mapred.output.key.class"))
+    {
+      setOutputKeyClass(getConf().getClass(props.getProperty("mapred.output.key.class"), null));
+    }
+
+    if (props.containsKey("mapred.output.value.class"))
+    {
+      setOutputValueClass(getConf().getClass(props.getProperty("mapred.output.value.class"), null));
+    }
+
+    if (props.containsKey("mapred.output.key.comparator.class"))
+    {
+      setSortComparatorClass(getConf().getClass(props.getProperty("mapred.output.key.comparator.class"),
+                                                null,
+                                                RawComparator.class));
+    }
+
+    if (props.containsKey("mapred.output.value.groupfn.class"))
+    {
+      setGroupingComparatorClass(getConf().getClass(props.getProperty("mapred.output.value.groupfn.class"),
+                                                    null,
+                                                    RawComparator.class));
+    }
+
+    if (props.get("use.latest.expansion") != null)
+    {
+      boolean useLatest = Boolean.parseBoolean(props.getProperty("use.latest.expansion"));
       setUseLatestExpansion(useLatest);
     }
-    _log.info(String.format("Using latest expansion: %s", _useLatestExpansion));
+    _log.info(String.format("Using latest expansion: %s", useLatestExpansion));
   }
 
   /**
@@ -330,7 +399,7 @@ public abstract class AbstractJob extends Configured
    */
   public Integer getNumReducers()
   {
-    return _numReducers;
+    return numReducers;
   }
 
   /**
@@ -341,7 +410,7 @@ public abstract class AbstractJob extends Configured
    */
   public void setNumReducers(Integer numReducers)
   {
-    this._numReducers = numReducers;
+    this.numReducers = numReducers;
   }
 
   /**
@@ -351,7 +420,7 @@ public abstract class AbstractJob extends Configured
    */
   public Path getCountersParentPath()
   {
-    return _countersParentPath;
+    return countersParentPath;
   }
 
   /**
@@ -361,7 +430,7 @@ public abstract class AbstractJob extends Configured
    */
   public boolean isUseLatestExpansion()
   {
-    return _useLatestExpansion;
+    return useLatestExpansion;
   }
 
   /**
@@ -372,7 +441,7 @@ public abstract class AbstractJob extends Configured
    */
   public void setUseLatestExpansion(boolean useLatestExpansion)
   {
-    this._useLatestExpansion = useLatestExpansion;
+    this.useLatestExpansion = useLatestExpansion;
   }
 
   /**
@@ -383,7 +452,7 @@ public abstract class AbstractJob extends Configured
    */
   public void setCountersParentPath(Path countersParentPath)
   {
-    this._countersParentPath = countersParentPath;
+    this.countersParentPath = countersParentPath;
   }
 
   /**
@@ -393,7 +462,7 @@ public abstract class AbstractJob extends Configured
    */
   public List<Path> getInputPaths()
   {
-    return _inputPaths;
+    return inputPaths;
   }
 
   /**
@@ -405,7 +474,7 @@ public abstract class AbstractJob extends Configured
    */
   public void setInputPaths(List<Path> inputPaths)
   {
-    this._inputPaths = inputPaths;
+    this.inputPaths = inputPaths;
   }
 
   /**
@@ -416,7 +485,7 @@ public abstract class AbstractJob extends Configured
    */
   public void setDistributedCachePaths(List<Path> cachePaths)
   {
-    this._distributedCache = cachePaths;
+    this.distributedCache = cachePaths;
   }
 
   /**
@@ -426,7 +495,7 @@ public abstract class AbstractJob extends Configured
    */
   public List<Path> getDistributedCachePaths()
   {
-    return _distributedCache;
+    return distributedCache;
   }
 
   /**
@@ -436,7 +505,7 @@ public abstract class AbstractJob extends Configured
    */
   public Path getOutputPath()
   {
-    return _outputPath;
+    return outputPath;
   }
 
   /**
@@ -447,7 +516,7 @@ public abstract class AbstractJob extends Configured
    */
   public void setOutputPath(Path outputPath)
   {
-    this._outputPath = outputPath;
+    this.outputPath = outputPath;
   }
 
   /**
@@ -457,7 +526,7 @@ public abstract class AbstractJob extends Configured
    */
   public Path getTempPath()
   {
-    return _tempPath;
+    return tempPath;
   }
 
   /**
@@ -468,7 +537,7 @@ public abstract class AbstractJob extends Configured
    */
   public void setTempPath(Path tempPath)
   {
-    this._tempPath = tempPath;
+    this.tempPath = tempPath;
   }
 
   /**
@@ -479,18 +548,18 @@ public abstract class AbstractJob extends Configured
    */
   protected FileSystem getFileSystem()
   {
-    if (_fs == null)
+    if (fs == null)
     {
       try
       {
-        _fs = FileSystem.get(getConf());
+        fs = FileSystem.get(getConf());
       }
       catch (IOException e)
       {
         throw new RuntimeException(e);
       }
     }
-    return _fs;
+    return fs;
   }
 
   /**
@@ -500,7 +569,7 @@ public abstract class AbstractJob extends Configured
    */
   protected Path randomTempPath()
   {
-    return new Path(_tempPath, String.format("mr-%s", UUID.randomUUID()));
+    return new Path(tempPath, String.format("mr-%s", UUID.randomUUID()));
   }
 
   /**
@@ -567,7 +636,19 @@ public abstract class AbstractJob extends Configured
   @SuppressWarnings("rawtypes")
   public Class<? extends Mapper> getMapperClass()
   {
-    return null;
+    return mapperClass;
+  }
+
+  /**
+   * Sets the mapper class
+   * 
+   * @param mapperClass
+   *          mapper class
+   */
+  @SuppressWarnings("rawtypes")
+  public void setMapperClass(Class<? extends Mapper> mapperClass)
+  {
+    this.mapperClass = mapperClass;
   }
 
   /**
@@ -578,7 +659,19 @@ public abstract class AbstractJob extends Configured
   @SuppressWarnings("rawtypes")
   public Class<? extends Reducer> getReducerClass()
   {
-    return null;
+    return reducerClass;
+  }
+
+  /**
+   * Sets the reducer class
+   * 
+   * @param reducerClass
+   *          reducer class
+   */
+  @SuppressWarnings("rawtypes")
+  public void setReducerClass(Class<? extends Reducer> reducerClass)
+  {
+    this.reducerClass = reducerClass;
   }
 
   /**
@@ -589,7 +682,19 @@ public abstract class AbstractJob extends Configured
   @SuppressWarnings("rawtypes")
   public Class<? extends Reducer> getCombinerClass()
   {
-    return null;
+    return combinerClass;
+  }
+
+  /**
+   * Sets the combiner class
+   * 
+   * @param combinerClass
+   *          combiner class
+   */
+  @SuppressWarnings("rawtypes")
+  public void setCombinerClass(Class<? extends Reducer> combinerClass)
+  {
+    this.combinerClass = combinerClass;
   }
 
   /**
@@ -598,9 +703,21 @@ public abstract class AbstractJob extends Configured
    * @return partitioner class
    */
   @SuppressWarnings("rawtypes")
-  protected Class<? extends Partitioner> getPartitionerClass()
+  public Class<? extends Partitioner> getPartitionerClass()
   {
-    return null;
+    return partitionerClass;
+  }
+
+  /**
+   * Sets the partitioner class
+   * 
+   * @param partitionerClass
+   *          partitioner class
+   */
+  @SuppressWarnings("rawtypes")
+  public void setPartitionerClass(Class<? extends Partitioner> partitionerClass)
+  {
+    this.partitionerClass = partitionerClass;
   }
 
   /**
@@ -609,9 +726,21 @@ public abstract class AbstractJob extends Configured
    * @return grouping comparator
    */
   @SuppressWarnings("rawtypes")
-  protected Class<? extends RawComparator> getGroupingComparator()
+  public Class<? extends RawComparator> getGroupingComparator()
   {
-    return null;
+    return groupingComparatorClass;
+  }
+
+  /**
+   * Sets the grouping comparator class
+   * 
+   * @param groupingComparatorClass
+   *          grouping comparator class
+   */
+  @SuppressWarnings("rawtypes")
+  public void setGroupingComparatorClass(Class<? extends RawComparator> groupingComparatorClass)
+  {
+    this.groupingComparatorClass = groupingComparatorClass;
   }
 
   /**
@@ -620,9 +749,21 @@ public abstract class AbstractJob extends Configured
    * @return sort comparator
    */
   @SuppressWarnings("rawtypes")
-  protected Class<? extends RawComparator> getSortComparator()
+  public Class<? extends RawComparator> getSortComparator()
   {
-    return null;
+    return sortComparatorClass;
+  }
+
+  /**
+   * Sets the sort comparator
+   * 
+   * @param sortComparatorClass
+   *          sort comparator class
+   */
+  @SuppressWarnings("rawtypes")
+  public void setSortComparatorClass(Class<? extends RawComparator> sortComparatorClass)
+  {
+    this.sortComparatorClass = sortComparatorClass;
   }
 
   /**
@@ -630,9 +771,20 @@ public abstract class AbstractJob extends Configured
    * 
    * @return map output key class
    */
-  protected Class<?> getMapOutputKeyClass()
+  public Class<?> getMapOutputKeyClass()
   {
-    return null;
+    return mapOutputKeyClass;
+  }
+
+  /**
+   * Sets the map output key class
+   * 
+   * @param mapOutputKeyClass
+   *          map output key class
+   */
+  public void setMapOutputKeyClass(Class<?> mapOutputKeyClass)
+  {
+    this.mapOutputKeyClass = mapOutputKeyClass;
   }
 
   /**
@@ -640,9 +792,20 @@ public abstract class AbstractJob extends Configured
    * 
    * @return map output value class
    */
-  protected Class<?> getMapOutputValueClass()
+  public Class<?> getMapOutputValueClass()
   {
-    return null;
+    return mapOutputValueClass;
+  }
+
+  /**
+   * Sets the map output value class
+   * 
+   * @param mapOutputValueClass
+   *          map output value class
+   */
+  public void setMapOutputValueClass(Class<?> mapOutputValueClass)
+  {
+    this.mapOutputValueClass = mapOutputValueClass;
   }
 
   /**
@@ -650,9 +813,20 @@ public abstract class AbstractJob extends Configured
    * 
    * @return reduce output key class
    */
-  protected Class<?> getOutputKeyClass()
+  public Class<?> getOutputKeyClass()
   {
-    return null;
+    return outputKeyClass;
+  }
+
+  /**
+   * Sets the output reduce key class
+   * 
+   * @param outputKeyClass
+   *          reduce output key class
+   */
+  public void setOutputKeyClass(Class<?> outputKeyClass)
+  {
+    this.outputKeyClass = outputKeyClass;
   }
 
   /**
@@ -660,9 +834,20 @@ public abstract class AbstractJob extends Configured
    * 
    * @return reduce output value class
    */
-  protected Class<?> getOutputValueClass()
+  public Class<?> getOutputValueClass()
   {
-    return null;
+    return outputValueClass;
+  }
+
+  /**
+   * Sets the output reduce value class
+   * 
+   * @param outputValueClass
+   *          reduce output value class
+   */
+  public void setOutputValueClass(Class<?> outputValueClass)
+  {
+    this.outputValueClass = outputValueClass;
   }
 
   /**
@@ -678,9 +863,10 @@ public abstract class AbstractJob extends Configured
       ClassNotFoundException
   {
     init(getConf());
-    
+
     List<Path> inputPaths = getInputPaths();
-    if(inputPaths == null) {
+    if (inputPaths == null)
+    {
       throw new RuntimeException("Input path is not specified. Setup the 'input.path' parameter.");
     }
 
@@ -688,11 +874,11 @@ public abstract class AbstractJob extends Configured
     List<String> inputPathsStr = new ArrayList<String>();
     for (Path p : inputPaths)
     {
-      String ip = _useLatestExpansion ? latestExpansionFunction.apply(p.toString()) : p.toString();
+      String ip = isUseLatestExpansion() ? latestExpansionFunction.apply(p.toString()) : p.toString();
       inputPathsStr.add(ip);
       _log.info(String.format("Adding %s to the input paths", ip));
     }
-    
+
     if (inputPathsStr.isEmpty())
     {
       throw new RuntimeException("No input paths can be found");
@@ -711,7 +897,7 @@ public abstract class AbstractJob extends Configured
       boolean useSymlink = false;
       for (Path p : getDistributedCachePaths())
       {
-        String dpath = _useLatestExpansion ? latestExpansionFunction.apply(p.toString()) : p.toString();
+        String dpath = isUseLatestExpansion() ? latestExpansionFunction.apply(p.toString()) : p.toString();
         distributedCachePaths.add(dpath);
         useSymlink |= dpath.contains("#");
         _log.info(String.format("Adding %s to the distributed cache", dpath));
@@ -732,12 +918,13 @@ public abstract class AbstractJob extends Configured
         StagedOutputJob.createStagedJob(getConf(),
                                         getName(),
                                         inputPathsStr,
-                                        _tempPath + outputPath.toString(),
+                                        tempPath + outputPath.toString(),
                                         outputPath.toString(),
                                         _log);
 
     Class<? extends Mapper> mapperClass = DiscoveryHelper.getMapperClass(this);
-    if(mapperClass == null) {
+    if (mapperClass == null)
+    {
       throw new RuntimeException("No mapper class implementation is defined. Override the 'getMapperClass()' method.");
     }
     job.setMapperClass(mapperClass);
@@ -906,6 +1093,7 @@ public abstract class AbstractJob extends Configured
     if (config == null)
     {
       config = new Configuration();
+      setConf(config);
     }
 
     // to enable unit tests to inject configuration
@@ -932,6 +1120,8 @@ public abstract class AbstractJob extends Configured
       {
         newKey = key.substring(HADOOP_PREFIX.length());
         config.set(newKey, value);
+        props.remove(key);
+        props.setProperty(newKey, value);
       }
       else
       {
