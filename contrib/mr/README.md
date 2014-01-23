@@ -205,6 +205,8 @@ public List<Path> getDistributedCachePaths()
 }
 ```
 
+You can also set the `mapred.cache.files` parameter with a comma-separated list of paths.
+
 ##### How to do a map-only job?
 
 Don't override the `getReducerClass()` or override it and return `null`.
