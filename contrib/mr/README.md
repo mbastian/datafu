@@ -278,7 +278,7 @@ Yes, this is supported both as an output of the mapper and the reducer. In most 
 
 Yes, one can always call the `getInputPaths()` method. In the case of an Avro job, one can also call `getInputSchemas()` to obtain the schema of each input path.
 
-#### Can MapReduce jobs be implemented in Scala?
+##### Can MapReduce jobs be implemented in Scala?
 
 Yes, this is possible. Here is an example of an Avro job:
 
