@@ -272,12 +272,41 @@ Yes, that is supported. Take a look at the `BasicAvroIntermediateWritableJob` jo
 
 ##### Can an Avro job output a Java POJO object?
 
-Yes, this is supported both as an ouput of the mapper and the reducer. In most cases, you don't have to provide a schema as the system will automatically infer the schema by introspection into the class.
-
+Yes, this is supported both as an output of the mapper and the reducer. In most cases, you don't have to provide a schema as the system will automatically infer the schema by introspection into the class.
 
 ##### Are the input files accessible in the `init()` method?
 
 Yes, one can always call the `getInputPaths()` method. In the case of an Avro job, one can also call `getInputSchemas()` to obtain the schema of each input path.
+
+#### Can MapReduce jobs be implemented in Scala?
+
+Yes, this is possible. Here is an example of an Avro job:
+
+```scala
+object TestScala extends AbstractAvroJob {
+
+  class TestScalaMapper extends Mapper[AvroKey[GenericRecord], NullWritable, Text, IntWritable] {
+
+    override def map(key: AvroKey[GenericRecord], value: NullWritable, context: Mapper[AvroKey[GenericRecord], NullWritable, Text, IntWritable]#Context) {
+      
+    }
+  }
+
+  class TestScalaReducer extends Reducer[Text, IntWritable, AvroKey[GenericRecord], NullWritable] {
+
+    override def reduce(key: Text, values: Iterable[IntWritable], context: Reducer[Text, IntWritable, AvroKey[GenericRecord], NullWritable]#Context) {
+      
+    }
+  }
+}
+
+class TestScala(name: String, props: Properties) extends AbstractAvroJob(name, props) {
+	
+    outputSchema = SchemaBuilder.record("data").fields().
+	    name("word").`type`().stringType().noDefault().
+	    name("count").`type`().longType().noDefault().endRecord()
+}
+```
 
 ## Design notes
 
@@ -287,11 +316,11 @@ The framework is based on the new Hadoop MapReduce API (org.apache.hadoop.mapred
 
 ### How to build
 
-		ant
+	ant
 		
 ### How to test
 
-		ant test
+	ant test
 
 ## Contribute
 
