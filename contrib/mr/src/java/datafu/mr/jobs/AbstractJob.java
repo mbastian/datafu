@@ -98,7 +98,7 @@ import datafu.mr.util.ReduceEstimator;
  * 
  * <p>
  * The <em>use.latest.expansion</em> property defines whether to expand the input paths which
- * contain the <em>#LATEST</em> suffix. When set to <em>true</true>
+ * contain the <em>#LATEST</em> suffix. When set to <em>true</em>
  * the folders are sorted lexicographically and the last path is chosen. If the
  * folder names are dates the latest date is to be chosen.
  * </p>
