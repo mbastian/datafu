@@ -161,9 +161,9 @@ Also, checkout the examples in the `/test/java` folder.
 Properties props = new Properties();
 props.setProperty("input.path", "/input");
 props.setProperty("output.path", "/output");
+props.setProperty("mapred.reduce.tasks", 5);
 
-FooJob job = new FooJob();
-job.setProperties(props);
+FooJob job = new FooJob("My Foo Job", props);
 job.run();
 ```
 
@@ -177,19 +177,21 @@ Override the `configure()` method.
 
 ##### How to setup the number of reducers
 
-Override the `getNumReducers()` method or setup the `num.reducers` or `mapred.reduce.tasks` settings.
+Override the `getNumReducers()` method or setup the `mapred.reduce.tasks` property.
 
-#### How to configure the input location?
+##### How to configure the input location?
 
-Setup the `input.path` parameter. For multiple inputs, separate the paths with a coma.
+Setup the `input.path` property. For multiple inputs, separate the paths with a coma. 
+
+Alternatively the paths may be listed separately. For example, `input.path.first` and `input.path.second` define two separate input paths.
 
 ##### How to configure the output location?
 
-Setup the `output.path` parameter. If the path exists, it will be deleted and replaced with the ouptut.
+Setup the `output.path` property. If the path exists, it will be deleted and replaced with the ouptut.
 
 ##### How to configure the temporary location?
 
-Setup the `temp.path` parameter. The default is `/tmp/`.
+Setup the `temp.path` property. The default is `/tmp/`.
 
 ##### How to use the distributed cache?
 
@@ -205,7 +207,7 @@ public List<Path> getDistributedCachePaths()
 }
 ```
 
-You can also set the `mapred.cache.files` parameter with a comma-separated list of paths.
+You can also set the `mapred.cache.files` property with a comma-separated list of paths.
 
 ##### How to do a map-only job?
 
@@ -232,7 +234,7 @@ Then, use the `MultipleOutputs.write()` method to configure which file output to
 
 If an input path ends with #LATEST (e.g. `/data/events/#LATEST`), the system will browse the folder and pick the first folder by lexicographic order. For instance, if `/data/events` contains two folders `/data/events/2013-01-01` and `/data/events/2014-01-01` it will replace `#LATEST` by `2014-01-01`.
 
-Set the `use.latest.expansion` parameter to `true` to enable this feature. The default value is `false`.
+Set the `use.latest.expansion` property to `true` to enable this feature. The default value is `false`.
 
 ##### How to use a custom input or output formats?
 
@@ -240,31 +242,33 @@ In the case of an job extending `AbstractJob`, the `setupInputFormat()` and `set
 
 ##### How are the mapper and reducer classes configured?
 
-If the job class contains a mapper and reducer inner classes these are automatically set as mapper and reducer for the job. This can always be set by implementing the `getMapperClass()` and `getReducerClass()` methods. The automatic setup doesn't work if the class contains multiple inner classes extending `Mapper` or `Reducer`.
+If the job class contains Mapper and Reducer inner classes they are automatically set as mapper and reducer for the job. The automatic setup doesn't work if the class contains multiple inner classes extending `Mapper` or `Reducer`. In that case, you can implement the `getMapperClass()` and `getReducerClass()` methods. 
 
-If you wish to use the `Mapper.class` as mapper, make sure to implement the `getMapperClass()`.
+It's also possible to define values for the `mapreduce.map.class` and `mapreduce.reduce.class` properties.
 
 ##### How to use a combiner?
 
-Override the `getCombinerClass()` method.
+Override the `getCombinerClass()` method. If you prefer to define this as a job property, configure the `mapreduce.combine.class` value.
 
 ##### How to use a partitioner?
 
-Override the `getPartitionerClass()` method.
+Override the `getPartitionerClass()` method. If you prefer to define this as a job property, configure the `mapreduce.partitioner.class` value.
 
 ##### How to use a grouping comparator?
 
-Override the `getGroupingComparator()` method.
+Override the `getGroupingComparator()` method. If you prefer to define this as a job property, configure the `mapred.output.value.groupfn.class` value.
 
 ##### How to use a sort comparator?
 
-Override the `getSortComparator()` method.
+Override the `getSortComparator()` method. If you prefer to define this as a job property, configure the `mapred.output.key.comparator.class` value.
 
 ##### How to provide the Avro output schema?
 
-Override the `getOutputSchema()` method. If the output is a Java primitive or a POJO object, the schema will be automatically inferred do it's not necessary to implement this method.
+Override the `getOutputSchema()` method. If the output is a Java primitive or a POJO object, the schema will be automatically inferred so it's not necessary to implement this method.
 
 In the case of a map-only job, implement the `getOutputSchema()` to define the mapper output schema.
+
+If you prefer to define this as a job property, configure the `output.schema` value.
 
 ##### Can an Avro job use Writable as intermediate types?
 
