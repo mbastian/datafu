@@ -167,15 +167,15 @@ FooJob job = new FooJob("My Foo Job", props);
 job.run();
 ```
 
-##### How to configure settings before the job initializes
+##### How to configure settings before the job initializes?
 
 Override the `init()` method.
 
-##### How to set configurations just before the job starts
+##### How to set configurations just before the job starts?
 
 Override the `configure()` method.
 
-##### How to setup the number of reducers
+##### How to setup the number of reducers?
 
 Override the `getNumReducers()` method or setup the `mapred.reduce.tasks` property.
 
