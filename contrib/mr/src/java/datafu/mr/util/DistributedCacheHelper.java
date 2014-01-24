@@ -31,7 +31,7 @@ import org.apache.hadoop.fs.Path;
 /**
  * Methods for working with the Hadoop distributed cache.
  * 
- * @author "Matthew Hayes"
+ * @author Matthew Hayes
  * 
  */
 public class DistributedCacheHelper

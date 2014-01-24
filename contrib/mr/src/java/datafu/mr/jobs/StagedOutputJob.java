@@ -53,6 +53,8 @@ import org.apache.log4j.Logger;
  * A derivation of {@link Job} that stages its output in another location and only moves it to the
  * final destination if the job completes successfully. It also outputs a counters file to the file
  * system that contains counters fetched from Hadoop and other task statistics.
+ * 
+ * @author Matthew Hayes
  */
 public class StagedOutputJob extends Job implements Callable<Boolean>
 {

@@ -70,7 +70,7 @@ import datafu.mr.util.LatestExpansionFunction;
  * method to specify the schema. If the type is POJO, its schema will be inferred if not specified.
  * </p>
  * 
- * @author "Mathieu Bastian"
+ * @author Mathieu Bastian
  */
 public abstract class AbstractAvroJob extends AbstractJob
 {

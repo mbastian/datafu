@@ -24,7 +24,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 /**
  * Utility to get the generic types configured by the Mapper and Reducer implementation
  * 
- * @author "Mathieu Bastian"
+ * @author Mathieu Bastian
  */
 public class IntermediateTypeHelper
 {

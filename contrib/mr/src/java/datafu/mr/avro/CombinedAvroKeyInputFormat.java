@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 /**
  * A combined input format for reading Avro data.
  * 
- * @author "Matthew Hayes"
+ * @author Matthew Hayes
  * 
  * @param <T>
  *          Type of data to be read

@@ -60,6 +60,7 @@ import datafu.mr.util.ReduceEstimator;
  * <li><em>temp.path</em> - Temporary path under which intermediate files are stored</li>
  * <li><em>counters.path</em> - Path to store job counters in</li>
  * <li><em>use.latest.expansion</em> - Expand input paths with #LATEST (boolean)</li>
+ * <li><em>num.reducers.bytes.per.reducer</em> - Number of bytes per reducer used by the reduce estimator</li>
  * </ul>
  * 
  * <p>
@@ -79,7 +80,7 @@ import datafu.mr.util.ReduceEstimator;
  * <li><em>mapred.output.value.class</em> - Output value class, see <code>{@link Job#setOutputValueClass(Class)}</code></li> 
  * <li><em>mapred.output.key.comparator.class</em> - Sort comparator class, see <code>{@link Job#setSortComparatorClass(Class)}</code></li> 
  * <li><em>mapred.output.value.groupfn.class</em> - Grouping comparator class, see <code>{@link Job#setGroupingComparatorClass(Class)}</code></li> 
- * <li><em>mapred.cache.files</em> - Distributed cache files separated by commas, see <code>{@link DistributedCache}
+ * <li><em>mapred.cache.files</em> - Distributed cache files separated by commas, see <code>{@link DistributedCache}</code></li>
  * </ul>
  * 
  * <p>
@@ -115,7 +116,7 @@ import datafu.mr.util.ReduceEstimator;
  * </ul>
  * </p>
  * 
- * @author "Mathieu Bastian"
+ * @author Mathieu Bastian
  * 
  */
 public abstract class AbstractJob extends Configured

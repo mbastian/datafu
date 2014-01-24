@@ -24,7 +24,7 @@ import datafu.mr.fs.PathUtils;
 /**
  * Utility to expand a path with the current datetime
  * 
- * @author "Mathieu Bastian"
+ * @author Mathieu Bastian
  */
 public class CurrentExpansionFunction
 {

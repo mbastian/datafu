@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 /**
  * Used to remove files from the file system when they are no longer needed.
  * 
- * @author "Matthew Hayes"
+ * @author Matthew Hayes
  * 
  */
 public class FileCleaner

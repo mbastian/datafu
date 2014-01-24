@@ -28,13 +28,19 @@ import datafu.mr.jobs.AbstractJob;
 /**
  * Utility to discover Mapper and Reducer implementation in classes
  * 
- * @author "Mathieu Bastian"
+ * @author Mathieu Bastian
  */
 public class DiscoveryHelper
 {
 
   private static final Logger _log = Logger.getLogger(DiscoveryHelper.class);
 
+  /**
+   * Returns the mapper class associated with the job.
+   * 
+   * @param job the job which the mapper class is to be found
+   * @return mapper class
+   */
   @SuppressWarnings("rawtypes")
   public static Class<? extends Mapper> getMapperClass(AbstractJob job)
   {
@@ -54,6 +60,12 @@ public class DiscoveryHelper
     }
   }
 
+  /**
+   * Returns the reducer class associated with the job.
+   * 
+   * @param job the job which the mapper class is to be found
+   * @return mapper class
+   */
   @SuppressWarnings("rawtypes")
   public static Class<? extends Reducer> getReducerClass(AbstractJob job)
   {

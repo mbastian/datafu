@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 /**
  * Utility to obtain the latest path from a folder
  * 
- * @author "Matthew Hayes"
+ * @author Matthew Hayes
  */
 public class LatestExpansionFunction
 {
@@ -43,6 +43,11 @@ public class LatestExpansionFunction
     this.fs = fs;
   }
 
+  /**
+   * Returns the latest path.
+   * @param path path which contains the latest suffix
+   * @return the expanded path
+   */
   public String apply(String path)
   {
     if (path.contains(LATEST_SUFFIX))

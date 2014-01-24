@@ -1,10 +1,10 @@
 # DataFu: MR
 
-DataFu MR is a lightweight framework for implementing Java MapReduce Hadoop jobs.
+DataFu-MR is a lightweight framework for implementing Java MapReduce jobs on Hadoop.
 
 ## Quick Start Example
 
-The way to use DataFu MR is simply to subclass its `AbstractJob` or `AbstractAvroJob` and implement/override the methods. 
+The way to use DataFu-MR is simply to subclass its `AbstractJob` or `AbstractAvroJob` and implement/override the methods. 
 
 Basic Word Count example:
 

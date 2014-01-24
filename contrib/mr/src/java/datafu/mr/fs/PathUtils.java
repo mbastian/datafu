@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 /**
  * A collection of utility methods for dealing with files and paths.
  * 
- * @author "Matthew Hayes"
+ * @author Matthew Hayes
  * 
  */
 public class PathUtils

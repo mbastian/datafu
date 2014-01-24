@@ -3,7 +3,7 @@
          xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
   <property name="name" value="datafu-mr" />
-  <property name="display.name" value="DataFu MR" />
+  <property name="display.name" value="DataFu-MR" />
   <property name="author" value="Mathieu Bastian" />
   <property name="datafu.mr.version" value="0.0.1" />
   <property name="version" value="${datafu.mr.version}-SNAPSHOT" />

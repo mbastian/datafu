@@ -30,7 +30,7 @@ import org.json.JSONObject;
  * configuration that maps each input path to its corresponding schema. Methods in this class help
  * with loading and storing these schema mappings.
  * 
- * @author "Matthew Hayes"
+ * @author Matthew Hayes
  * 
  */
 public class AvroMultipleInputsUtil

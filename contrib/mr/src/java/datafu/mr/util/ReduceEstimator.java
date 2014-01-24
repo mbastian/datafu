@@ -54,7 +54,7 @@ import datafu.mr.fs.PathUtils;
  * <em>num.reducers.mydata.bytes.per.reducer</em>.
  * </p>
  * 
- * @author "Matthew Hayes"
+ * @author Matthew Hayes
  * 
  */
 public class ReduceEstimator
