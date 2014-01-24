@@ -289,6 +289,10 @@ Yes, this is possible. Here is an example of an Avro job:
 ```scala
 object TestScala extends AbstractAvroJob {
 
+  def OUTPUT_SCHEMA: Schema = SchemaBuilder.record("data").fields().
+	    name("word").`type`().stringType().noDefault().
+	    name("count").`type`().longType().noDefault().endRecord()
+
   class TestScalaMapper extends Mapper[AvroKey[GenericRecord], NullWritable, Text, IntWritable] {
 
     override def map(key: AvroKey[GenericRecord], value: NullWritable, context: Mapper[AvroKey[GenericRecord], NullWritable, Text, IntWritable]#Context) {
@@ -306,9 +310,7 @@ object TestScala extends AbstractAvroJob {
 
 class TestScala(name: String, props: Properties) extends AbstractAvroJob(name, props) {
 	
-    outputSchema = SchemaBuilder.record("data").fields().
-	    name("word").`type`().stringType().noDefault().
-	    name("count").`type`().longType().noDefault().endRecord()
+    outputSchema = TestScala.OUTPUT_SCHEMA
 }
 ```
 
