@@ -149,13 +149,13 @@ For a complete list of dependencies, consult the `ivy.xml` file.
 
 ## FAQ
 
-#### How to get started?
+##### How to get started?
 
 Override the `AbstractJob` or `AbstractAvroJob` and define a mapper and reducer class. 
 
 Also, checkout the examples in the `/test/java` folder.
 
-#### How to configure and run a job?
+##### How to configure and run a job?
 
 ```java
 Properties props = new Properties();
