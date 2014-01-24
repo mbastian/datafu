@@ -38,7 +38,8 @@ public class DiscoveryHelper
   /**
    * Returns the mapper class associated with the job.
    * 
-   * @param job the job which the mapper class is to be found
+   * @param job
+   *          the job which the mapper class is to be found
    * @return mapper class
    */
   @SuppressWarnings("rawtypes")
@@ -63,7 +64,8 @@ public class DiscoveryHelper
   /**
    * Returns the reducer class associated with the job.
    * 
-   * @param job the job which the mapper class is to be found
+   * @param job
+   *          the job which the mapper class is to be found
    * @return mapper class
    */
   @SuppressWarnings("rawtypes")

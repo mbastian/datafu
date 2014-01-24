@@ -31,9 +31,12 @@ public class Schemas
   /**
    * Creates a record schema with name and package derived from a class and with the provided fields
    * 
-   * @param cls class
-   * @param name schema name
-   * @param fields list of fields
+   * @param cls
+   *          class
+   * @param name
+   *          schema name
+   * @param fields
+   *          list of fields
    * @return Avro record schema
    */
   public static Schema createRecordSchema(@SuppressWarnings("rawtypes") Class cls, String name, Field... fields)
@@ -52,7 +55,8 @@ public class Schemas
    * Creates a record schema with name and package derived from a class. "Key" is appended to the
    * class name to derive the record's name.
    * 
-   * @param cls class
+   * @param cls
+   *          class
    * @return Avro record schema
    */
   public static Schema createKeyRecordSchema(@SuppressWarnings("rawtypes") Class cls)
@@ -64,8 +68,10 @@ public class Schemas
    * Creates a record schema with name and package derived from a class. "Key" is appended to the
    * class name to derive the record's name.
    * 
-   * @param cls class
-   * @param fields list of fields
+   * @param cls
+   *          class
+   * @param fields
+   *          list of fields
    * @return Avro record schema
    */
   public static Schema createKeyRecordSchema(@SuppressWarnings("rawtypes") Class cls, Field... fields)

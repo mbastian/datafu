@@ -60,27 +60,40 @@ import datafu.mr.util.ReduceEstimator;
  * <li><em>temp.path</em> - Temporary path under which intermediate files are stored</li>
  * <li><em>counters.path</em> - Path to store job counters in</li>
  * <li><em>use.latest.expansion</em> - Expand input paths with #LATEST (boolean)</li>
- * <li><em>num.reducers.bytes.per.reducer</em> - Number of bytes per reducer used by the reduce estimator</li>
+ * <li><em>num.reducers.bytes.per.reducer</em> - Number of bytes per reducer used by the reduce
+ * estimator</li>
  * </ul>
  * 
  * <p>
- * In addition, the following Hadoop properties can either be set by the <em>Properties</em> given to the constructor, by
- * using the setter methods or by overriding the getter methods.
+ * In addition, the following Hadoop properties can either be set by the <em>Properties</em> given
+ * to the constructor, by using the setter methods or by overriding the getter methods.
  * </p>
  * 
  * <ul>
- * <li><em>mapred.reduce.tasks</em> - Number of reducers, see <code>{@link Job#setNumReduceTasks(int)}</code></li> 
- * <li><em>mapreduce.map.class</em> - Mapper class, see <code>{@link Job#setMapperClass(Class)}</code></li> 
- * <li><em>mapreduce.reduce.class</em> - Reducer class, see <code>{@link Job#setReducerClass(Class)}</code></li> 
- * <li><em>mapreduce.combine.class</em> - Combiner class, see <code>{@link Job#setCombinerClass(Class)}</code></li> 
- * <li><em>mapreduce.partitioner.class</em> - Partitioner class, see <code>{@link Job#setPartitionerClass(Class)}</code></li> 
- * <li><em>mapred.mapoutput.key.class</em> - Map output key class, see <code>{@link Job#setMapOutputKeyClass(Class)}</code></li> 
- * <li><em>mapred.mapoutput.value.class</em> - Map output value class, see <code>{@link Job#setMapOutputValueClass(Class)}</code></li> 
- * <li><em>mapred.output.key.class</em> - Output key class, see <code>{@link Job#setOutputKeyClass(Class)}</code></li> 
- * <li><em>mapred.output.value.class</em> - Output value class, see <code>{@link Job#setOutputValueClass(Class)}</code></li> 
- * <li><em>mapred.output.key.comparator.class</em> - Sort comparator class, see <code>{@link Job#setSortComparatorClass(Class)}</code></li> 
- * <li><em>mapred.output.value.groupfn.class</em> - Grouping comparator class, see <code>{@link Job#setGroupingComparatorClass(Class)}</code></li> 
- * <li><em>mapred.cache.files</em> - Distributed cache files separated by commas, see <code>{@link DistributedCache}</code></li>
+ * <li><em>mapred.reduce.tasks</em> - Number of reducers, see
+ * <code>{@link Job#setNumReduceTasks(int)}</code></li>
+ * <li><em>mapreduce.map.class</em> - Mapper class, see
+ * <code>{@link Job#setMapperClass(Class)}</code></li>
+ * <li><em>mapreduce.reduce.class</em> - Reducer class, see
+ * <code>{@link Job#setReducerClass(Class)}</code></li>
+ * <li><em>mapreduce.combine.class</em> - Combiner class, see
+ * <code>{@link Job#setCombinerClass(Class)}</code></li>
+ * <li><em>mapreduce.partitioner.class</em> - Partitioner class, see
+ * <code>{@link Job#setPartitionerClass(Class)}</code></li>
+ * <li><em>mapred.mapoutput.key.class</em> - Map output key class, see
+ * <code>{@link Job#setMapOutputKeyClass(Class)}</code></li>
+ * <li><em>mapred.mapoutput.value.class</em> - Map output value class, see
+ * <code>{@link Job#setMapOutputValueClass(Class)}</code></li>
+ * <li><em>mapred.output.key.class</em> - Output key class, see
+ * <code>{@link Job#setOutputKeyClass(Class)}</code></li>
+ * <li><em>mapred.output.value.class</em> - Output value class, see
+ * <code>{@link Job#setOutputValueClass(Class)}</code></li>
+ * <li><em>mapred.output.key.comparator.class</em> - Sort comparator class, see
+ * <code>{@link Job#setSortComparatorClass(Class)}</code></li>
+ * <li><em>mapred.output.value.groupfn.class</em> - Grouping comparator class, see
+ * <code>{@link Job#setGroupingComparatorClass(Class)}</code></li>
+ * <li><em>mapred.cache.files</em> - Distributed cache files separated by commas, see
+ * <code>{@link DistributedCache}</code></li>
  * </ul>
  * 
  * <p>
@@ -98,9 +111,9 @@ import datafu.mr.util.ReduceEstimator;
  * 
  * <p>
  * The <em>use.latest.expansion</em> property defines whether to expand the input paths which
- * contain the <em>#LATEST</em> suffix. When set to <em>true</em>
- * the folders are sorted lexicographically and the last path is chosen. If the
- * folder names are dates the latest date is to be chosen.
+ * contain the <em>#LATEST</em> suffix. When set to <em>true</em> the folders are sorted
+ * lexicographically and the last path is chosen. If the folder names are dates the latest date is
+ * to be chosen.
  * </p>
  * 
  * <p>

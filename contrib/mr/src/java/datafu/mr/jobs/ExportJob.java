@@ -29,6 +29,25 @@ import org.json.JSONObject;
 import datafu.mr.fs.PathUtils;
 import datafu.mr.util.CurrentExpansionFunction;
 
+/**
+ * Utility job to move folders and delete old versions.
+ * <p>
+ * The job works with a given <em>export.spec</em> JSON configuration string which specifies the
+ * source, the destination and the number of folders to keep. When removing old folders from the
+ * destination, it sorts folders lexicographically based on their name and keep at most the number
+ * wanted.
+ * </p>
+ * <p>
+ * This is a configuration example for <em>export.spec</em>:
+ * </p>
+ * <p>
+ * <code>[{"source":"/input", "dest":"/output/#CURRENT","keep":3}]</code>
+ * </p>
+ * The <em>#CURRENT</em> suffix will be replaced by the current date using the
+ * <em>yyyy-MM-dd-HH-mm</em> format.
+ * 
+ * @author Matthew Hayes
+ */
 public class ExportJob extends AbstractJob
 {
   private final Logger _log = Logger.getLogger(AbstractJob.class);

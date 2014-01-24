@@ -45,7 +45,9 @@ public class LatestExpansionFunction
 
   /**
    * Returns the latest path.
-   * @param path path which contains the latest suffix
+   * 
+   * @param path
+   *          path which contains the latest suffix
    * @return the expanded path
    */
   public String apply(String path)
