@@ -15,6 +15,7 @@
  */
 package datafu.mr.util;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -36,11 +37,11 @@ public class CurrentExpansionFunction
     this.log = log;
   }
 
-  public String apply(String path)
+  public String apply(String path, SimpleDateFormat format)
   {
     if (path.endsWith(CURRENT_SUFFIX))
     {
-      String destPath = PathUtils.dateTimedPathFormat.format(new Date());
+      String destPath = format.format(new Date());
       path = path.substring(0, path.length() - CURRENT_SUFFIX.length()) + destPath;
     }
     return path;

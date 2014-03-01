@@ -20,12 +20,10 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,13 +51,6 @@ public class PathUtils
 {
   private static Logger _log = Logger.getLogger(PathUtils.class);
 
-  public final static TimeZone timeZone = TimeZone.getTimeZone("UTC");
-  public static final SimpleDateFormat datedPathFormat = new SimpleDateFormat("yyyy-MM-dd");
-  public static final SimpleDateFormat nestedDatedPathFormat = new SimpleDateFormat("yyyy/MM/dd");
-  public static final SimpleDateFormat dateTimedPathFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
-  private static final Pattern timestampPathPattern = Pattern.compile(".+/(\\d{8})");
-  private static final Pattern dailyPathPattern = Pattern.compile("(.+)/(\\d{4}/\\d{2}/\\d{2})");
-
   /**
    * Filters out paths starting with "." and "_".
    */
@@ -72,46 +63,18 @@ public class PathUtils
       return !s.startsWith(".") && !s.startsWith("_");
     }
   };
-
-  static
-  {
-    datedPathFormat.setTimeZone(timeZone);
-    nestedDatedPathFormat.setTimeZone(timeZone);
-    dateTimedPathFormat.setTimeZone(timeZone);
-  }
-
+  
   /**
-   * Delete all but the last N days of paths matching the "yyyyMMdd" format.
+   * Delete all but the last N paths matching the given date format.
    * 
    * @param fs
    * @param path
    * @param retentionCount
    * @throws IOException
    */
-  public static void keepLatestDatedPaths(FileSystem fs, Path path, int retentionCount) throws IOException
+  public static void keepLatestDatedPaths(FileSystem fs, Path path, int retentionCount, SimpleDateFormat dateFormat) throws IOException
   {
-    LinkedList<DatePath> outputs = new LinkedList<DatePath>(PathUtils.findDatedPaths(fs, path));
-    _log.info(String.format("Found %d matching folders in %s", outputs.size(), path.toString()));
-
-    while (outputs.size() > retentionCount)
-    {
-      DatePath toDelete = outputs.removeFirst();
-      _log.info(String.format("Removing %s", toDelete.getPath()));
-      fs.delete(toDelete.getPath(), true);
-    }
-  }
-
-  /**
-   * Delete all but the last N days of paths matching the "yyyyMMdd" format.
-   * 
-   * @param fs
-   * @param path
-   * @param retentionCount
-   * @throws IOException
-   */
-  public static void keepLatestDateTimedPaths(FileSystem fs, Path path, int retentionCount) throws IOException
-  {
-    LinkedList<DatePath> outputs = new LinkedList<DatePath>(PathUtils.findDateTimedPaths(fs, path));
+    LinkedList<DatePath> outputs = new LinkedList<DatePath>(PathUtils.findDatedPaths(fs, path, dateFormat));
     _log.info(String.format("Found %d matching folders in %s", outputs.size(), path.toString()));
 
     while (outputs.size() > retentionCount)
@@ -130,9 +93,9 @@ public class PathUtils
    * @param retentionCount
    * @throws IOException
    */
-  public static void keepLatestNestedDatedPaths(FileSystem fs, Path path, int retentionCount) throws IOException
+  public static void keepLatestNestedDatedPaths(FileSystem fs, Path path, int retentionCount, SimpleDateFormat format) throws IOException
   {
-    List<DatePath> outputPaths = PathUtils.findNestedDatedPaths(fs, path);
+    List<DatePath> outputPaths = PathUtils.findNestedDatedPaths(fs, path, format);
 
     if (outputPaths.size() > retentionCount)
     {
@@ -147,7 +110,7 @@ public class PathUtils
   }
 
   /**
-   * List all paths matching the "yyyy/MM/dd" format under a given path.
+   * List all paths matching the given format under a given path. The format must be a nested format with slashes;
    * 
    * @param fs
    *          file system
@@ -156,11 +119,15 @@ public class PathUtils
    * @return paths
    * @throws IOException
    */
-  public static List<DatePath> findNestedDatedPaths(FileSystem fs, Path input) throws IOException
+  public static List<DatePath> findNestedDatedPaths(FileSystem fs, Path input, SimpleDateFormat format) throws IOException
   {
+    if(!format.toPattern().contains("/")) {
+      throw new RuntimeException("The format must contain at least one slash");
+    }
+    
     List<DatePath> inputDates = new ArrayList<DatePath>();
 
-    FileStatus[] pathsStatus = fs.globStatus(new Path(input, "*/*/*"), nonHiddenPathFilter);
+    FileStatus[] pathsStatus = fs.globStatus(new Path(input, format.toPattern().replaceAll("[^/]+", "*")), nonHiddenPathFilter);
 
     if (pathsStatus == null)
     {
@@ -169,59 +136,19 @@ public class PathUtils
 
     for (FileStatus pathStatus : pathsStatus)
     {
-      Matcher matcher = dailyPathPattern.matcher(pathStatus.getPath().toString());
-      if (matcher.matches())
+      Date date;
+      try
       {
-        String datePath = matcher.group(2);
-        Date date;
-        try
-        {
-          date = nestedDatedPathFormat.parse(datePath);
-        }
-        catch (ParseException e)
-        {
-          continue;
-        }
-
-        Calendar cal = Calendar.getInstance(timeZone);
-
-        cal.setTimeInMillis(date.getTime());
-
-        inputDates.add(new DatePath(cal.getTime(), pathStatus.getPath()));
+        date = format.parse(pathStatus.getPath().toString());
       }
+      catch (ParseException e)
+      {
+        continue;
+      }
+      inputDates.add(new DatePath(date, pathStatus.getPath(), format));
     }
 
     return inputDates;
-  }
-
-  /**
-   * List all paths matching the "yyyyMMdd" format under a given path.
-   * 
-   * @param fs
-   *          file system
-   * @param path
-   *          path to search under
-   * @return paths
-   * @throws IOException
-   */
-  public static List<DatePath> findDatedPaths(FileSystem fs, Path path) throws IOException
-  {
-    return findDatedPaths(fs, path, datedPathFormat);
-  }
-
-  /**
-   * List all paths matching the "yyyyMMddHHmm" format under a given path.
-   * 
-   * @param fs
-   *          file system
-   * @param path
-   *          path to search under
-   * @return paths
-   * @throws IOException
-   */
-  public static List<DatePath> findDateTimedPaths(FileSystem fs, Path path) throws IOException
-  {
-    return findDatedPaths(fs, path, dateTimedPathFormat);
   }
 
   /**
@@ -236,7 +163,7 @@ public class PathUtils
    * @return paths
    * @throws IOException
    */
-  private static List<DatePath> findDatedPaths(FileSystem fs, Path path, SimpleDateFormat format) throws IOException
+  public static List<DatePath> findDatedPaths(FileSystem fs, Path path, SimpleDateFormat format) throws IOException
   {
     FileStatus[] outputPaths = fs.listStatus(path, nonHiddenPathFilter);
 
@@ -256,7 +183,7 @@ public class PathUtils
           continue;
         }
 
-        outputs.add(new DatePath(date, outputPath.getPath()));
+        outputs.add(new DatePath(date, outputPath.getPath(), format));
       }
     }
 
@@ -323,41 +250,16 @@ public class PathUtils
   }
 
   /**
-   * Gets the date for a path in the "yyyyMMdd" format.
-   * 
-   * @param path
-   *          path to check
-   * @return date for path
-   */
-  public static Date getDateForDatedPath(Path path)
-  {
-    Matcher matcher = timestampPathPattern.matcher(path.toString());
-
-    if (!matcher.matches())
-    {
-      throw new RuntimeException("Unexpected input filename: " + path);
-    }
-
-    try
-    {
-      return PathUtils.datedPathFormat.parse(matcher.group(1));
-    }
-    catch (ParseException e)
-    {
-      throw new RuntimeException("Unexpected input filename: " + path);
-    }
-  }
-
-  /**
-   * Gets the date for a path in the "yyyy/MM/dd" format.
+   * Gets the date for a path in the specified format.
    * 
    * @param path
    *          path to check
    * @return date
    */
-  public static Date getDateForNestedDatedPath(Path path)
+  public static Date getDateForPath(Path path, SimpleDateFormat dateFormat)
   {
-    Matcher matcher = dailyPathPattern.matcher(path.toString());
+    Pattern pattern = Pattern.compile(".+/(.{"+dateFormat.toPattern().length()+"})");
+    Matcher matcher = pattern.matcher(path.toString());
 
     if (!matcher.matches())
     {
@@ -366,7 +268,7 @@ public class PathUtils
 
     try
     {
-      return PathUtils.nestedDatedPathFormat.parse(matcher.group(2));
+      return dateFormat.parse(matcher.group(1));
     }
     catch (ParseException e)
     {
@@ -382,16 +284,17 @@ public class PathUtils
    *          path to get root
    * @return root path
    */
-  public static Path getNestedPathRoot(Path path)
+  public static Path getRootForDatePath(Path path, SimpleDateFormat dateFormat)
   {
-    Matcher matcher = dailyPathPattern.matcher(path.toString());
+    Pattern pattern = Pattern.compile(".+/(.{"+dateFormat.toPattern().length()+"})");
+    Matcher matcher = pattern.matcher(path.toString());
 
     if (!matcher.matches())
     {
       throw new RuntimeException("Unexpected input filename: " + path);
     }
 
-    return new Path(matcher.group(1));
+    return new Path(path.toString().substring(0, path.toString().length()-dateFormat.toPattern().length()));
   }
 
   /**

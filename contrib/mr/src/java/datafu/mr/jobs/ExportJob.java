@@ -16,6 +16,7 @@
 package datafu.mr.jobs;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -41,16 +42,17 @@ import datafu.mr.util.CurrentExpansionFunction;
  * This is a configuration example for <em>export.spec</em>:
  * </p>
  * <p>
- * <code>[{"source":"/input", "dest":"/output/#CURRENT","keep":3}]</code>
+ * <code>[{"source":"/input", "dest":"/output/#CURRENT","keep":3, "format":"yyyy-MM-dd"}]</code>
  * </p>
  * The <em>#CURRENT</em> suffix will be replaced by the current date using the
- * <em>yyyy-MM-dd-HH-mm</em> format.
+ * provided format. If no format is provided, the default is <em>yyyy-MM-dd-HH-mm</em>.
  * 
  * @author Matthew Hayes
  */
 public class ExportJob extends AbstractJob
 {
   private final Logger _log = Logger.getLogger(AbstractJob.class);
+  private static final SimpleDateFormat defaultFormat = new SimpleDateFormat("yyyy-MM-dd");
 
   private String _exportSpec;
 
@@ -82,14 +84,18 @@ public class ExportJob extends AbstractJob
         JSONObject obj = (JSONObject) exportSpec.get(i);
         String source = (String) obj.get("source");
         String dest = (String) obj.get("dest");
+        SimpleDateFormat format = defaultFormat;
         int keep = 0;
         if (obj.has("keep"))
         {
           keep = (Integer) obj.get("keep");
         }
+        if(obj.has("format")) {
+          format = new SimpleDateFormat(obj.getString("format"));
+        }
 
         CurrentExpansionFunction expFunction = new CurrentExpansionFunction(_log);
-        dest = expFunction.apply(dest);
+        dest = expFunction.apply(dest, format);
 
         Path sourcePath = new Path(source);
         Path destPath = new Path(dest);
@@ -104,7 +110,7 @@ public class ExportJob extends AbstractJob
         _log.info(String.format("Moving from [%s] to [%s]", sourcePath, destPath));
         fs.rename(sourcePath, destPath);
 
-        PathUtils.keepLatestDateTimedPaths(fs, destPath.getParent(), keep);
+        PathUtils.keepLatestDatedPaths(fs, destPath.getParent(), keep, format);
       }
 
     }

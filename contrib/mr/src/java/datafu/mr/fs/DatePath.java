@@ -29,15 +29,16 @@ import org.apache.hadoop.fs.Path;
  */
 public class DatePath implements Comparable<DatePath>
 {
-  private static final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
   private final Date date;
   private final Path path;
+  private final SimpleDateFormat format;
 
-  public DatePath(Date date, Path path)
+  public DatePath(Date date, Path path, SimpleDateFormat format)
   {
     this.date = date;
     this.path = path;
+    this.format = format;
   }
 
   public Date getDate()
@@ -50,15 +51,15 @@ public class DatePath implements Comparable<DatePath>
     return this.path;
   }
 
-  public static DatePath createDatedPath(Path parent, Date date)
+  public static DatePath createDatedPath(Path parent, Date date, SimpleDateFormat format)
   {
-    return new DatePath(date, new Path(parent, PathUtils.datedPathFormat.format(date)));
+    return new DatePath(date, new Path(parent, format.format(date)), format);
   }
 
   @Override
   public String toString()
   {
-    return String.format("[date=%s, path=%s]", timestampFormat.format(this.date), this.path.toString());
+    return String.format("[date=%s, path=%s]", format.format(this.date), this.path.toString());
   }
 
   @Override

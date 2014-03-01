@@ -196,6 +196,7 @@ public abstract class AbstractAvroJob extends AbstractJob
   @Override
   public void configure(Job job)
   {
+    super.configure(job);
     Class<? extends Mapper> mapperClass = DiscoveryHelper.getMapperClass(this);
     Class<? extends Reducer> reducerClass = DiscoveryHelper.getReducerClass(this);
 

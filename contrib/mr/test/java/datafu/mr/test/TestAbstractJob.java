@@ -109,7 +109,7 @@ public class TestAbstractJob extends TestBase
     writeConcatInput(new Path(_inputPath, "B"), "bar");
     Path multipleInput = new Path(_inputPath.toString() + "/A," + _inputPath.toString() + "/B");
     configureAndRunJob(new BasicConcatMultipleInputsJob(), "BasicConcatMultipleInputsJob", multipleInput, _outputPath);
-    checkConcatOutput("foobar");
+    checkConcatOutput("foo", "bar");
   }
 
   @Test
@@ -212,7 +212,7 @@ public class TestAbstractJob extends TestBase
     writer.close();
   }
 
-  private void checkConcatOutput(String value) throws IOException
+  private void checkConcatOutput(String value1, String value2) throws IOException
   {
     BasicWritableReader<IntWritable, Text> reader =
         new BasicWritableReader<IntWritable, Text>(_outputPath, getFileSystem(), IntWritable.class, Text.class);
@@ -222,7 +222,8 @@ public class TestAbstractJob extends TestBase
 
     Assert.assertNotNull(res);
     Assert.assertEquals(res.size(), 1);
-    Assert.assertEquals(res.get(new IntWritable(0)), new Text(value));
+    Text val = res.get(new IntWritable(0));
+    Assert.assertTrue(new Text(value1+value2).equals(val) || (new Text(value2+value1).equals(val)));
   }
 
   private void writeCacheFile() throws IOException
