@@ -932,7 +932,7 @@ public abstract class AbstractJob extends Configured
         StagedOutputJob.createStagedJob(getConf(),
                                         getName(),
                                         inputPathsStr,
-                                        tempPath + outputPath.toString(),
+                                        tempPath.toString(),
                                         outputPath.toString(),
                                         _log);
 

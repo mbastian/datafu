@@ -26,6 +26,8 @@ import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,10 +47,12 @@ import datafu.mr.test.jobs.BasicAvroJob;
 import datafu.mr.test.jobs.BasicAvroMapOnlyJob;
 import datafu.mr.test.jobs.BasicAvroMapOnlyOutputObjectJob;
 import datafu.mr.test.jobs.BasicAvroMultipleInputsJob;
+import datafu.mr.test.jobs.BasicAvroMultipleOutputsJob;
 import datafu.mr.test.jobs.BasicAvroOutputObjectJob;
 import datafu.mr.test.jobs.BasicAvroWordCountJob;
 import datafu.mr.test.util.BasicAvroReader;
 import datafu.mr.test.util.BasicAvroWriter;
+import datafu.mr.test.util.BasicWritableReader;
 
 @Test(groups = "pcl")
 public class TestAvroJob extends TestBase
@@ -197,6 +201,16 @@ public class TestAvroJob extends TestBase
     checkWordCountJob();
   }
 
+  @Test
+  public void basicAvroMultipleOutputsJobTest() throws IOException,
+      InterruptedException,
+      ClassNotFoundException
+  {
+    initBasicJob();
+    configureAndRunJob(new BasicAvroMultipleOutputsJob(), "BasicAvroMultipleOutputsJob", _inputPath, _outputPath);
+    checkBasicMultipleOutputsJob();
+  }
+
   // UTILITIES
 
   private void initBasicJob() throws IOException
@@ -222,6 +236,22 @@ public class TestAvroJob extends TestBase
     checkIdCount(counts, 3, 4);
     checkIdCount(counts, 4, 3);
     checkIdCount(counts, 5, 1);
+  }
+
+  private void checkBasicMultipleOutputsJob() throws IOException
+  {
+    HashMap<Long, Long> countsEven = loadMultipleOutputsCounts("even");
+
+    checkSize(countsEven, 2);
+    checkIdCount(countsEven, 2, 3);
+    checkIdCount(countsEven, 4, 3);
+
+    HashMap<Long, Long> countsOdd = loadMultipleOutputsCounts("odd");
+
+    checkSize(countsOdd, 3);
+    checkIdCount(countsOdd, 1, 5);
+    checkIdCount(countsOdd, 3, 4);
+    checkIdCount(countsOdd, 5, 1);
   }
 
   private void initBasicMultipleInputsJob() throws IOException
@@ -310,10 +340,20 @@ public class TestAvroJob extends TestBase
     Assert.assertEquals(countOutputFolders(), expectedCount, "Found: " + listOutputFolders());
   }
 
+  private void checkMultipleOutputFolderCount(int expectedCount) throws IOException
+  {
+    Assert.assertEquals(countOutputFolders(), expectedCount, "Found: " + listOutputFolders());
+  }
+
   private int countOutputFolders() throws IOException
   {
+    return countOutputFolders(_outputPath);
+  }
+
+  private int countOutputFolders(Path path) throws IOException
+  {
     FileSystem fs = getFileSystem();
-    return fs.listStatus(_outputPath, PathUtils.nonHiddenPathFilter).length;
+    return fs.listStatus(path, PathUtils.nonHiddenPathFilter).length;
   }
 
   private String listOutputFolders() throws IOException
@@ -390,6 +430,24 @@ public class TestAvroJob extends TestBase
       Integer count = (Integer) r.get("count");
       Assert.assertFalse(counts.containsKey(word));
       counts.put(word, count);
+    }
+    reader.close();
+    return counts;
+  }
+
+  private HashMap<Long, Long> loadMultipleOutputsCounts(String folder) throws IOException
+  {
+    HashMap<Long, Long> counts = new HashMap<Long, Long>();
+
+    BasicAvroReader reader = new BasicAvroReader(new Path(_outputPath.toString() + "/" + folder), getFileSystem());
+    reader.open();
+    for (Object o : reader.readAll())
+    {
+      GenericRecord r = (GenericRecord) o;
+      Long memberId = (Long) r.get("key");
+      Long count = (Long) r.get("count");
+      Assert.assertFalse(counts.containsKey(memberId));
+      counts.put(memberId, count);
     }
     reader.close();
     return counts;
