@@ -240,6 +240,8 @@ public class TestAvroJob extends TestBase
 
   private void checkBasicMultipleOutputsJob() throws IOException
   {
+	checkOutputFolderCount(2);
+	  
     HashMap<Long, Long> countsEven = loadMultipleOutputsCounts("even");
 
     checkSize(countsEven, 2);

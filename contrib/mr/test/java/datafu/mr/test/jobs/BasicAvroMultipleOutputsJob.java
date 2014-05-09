@@ -30,6 +30,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 
 import datafu.mr.avro.Schemas;
 import datafu.mr.jobs.AbstractAvroJob;
@@ -51,8 +52,9 @@ public class BasicAvroMultipleOutputsJob extends AbstractAvroJob
   @Override
   public void setupOutputFormat(Job job) throws IOException
   {
-    AvroMultipleOutputs.addNamedOutput(job, "odd", AvroKeyOutputFormat.class, OUTPUT_SCHEMA, null);
-    AvroMultipleOutputs.addNamedOutput(job, "even", AvroKeyOutputFormat.class, OUTPUT_SCHEMA, null);
+    LazyOutputFormat.setOutputFormatClass(job, AvroKeyOutputFormat.class);
+    AvroMultipleOutputs.addNamedOutput(job, "odd", AvroKeyOutputFormat.class, OUTPUT_SCHEMA);
+    AvroMultipleOutputs.addNamedOutput(job, "even", AvroKeyOutputFormat.class, OUTPUT_SCHEMA);
   }
 
   public static class MOMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, IntWritable, IntWritable>
@@ -101,6 +103,7 @@ public class BasicAvroMultipleOutputsJob extends AbstractAvroJob
       }
     }
 
+    @Override
     public void cleanup(Context c) throws IOException,
         InterruptedException
     {
